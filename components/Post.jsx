@@ -1,8 +1,12 @@
 // components/Post.jsx
+import Image from 'next/image';
 import React from 'react';
+import { posts } from '@/constant/post';
 
-const Post = ({ title, content, author, authorImage, postDate }) => {
+const Post = () => {
   return (
+   <div>
+   {posts.map(({ title, content, author, authorImage, postDate }) => (
     <div className="border rounded-lg p-4 shadow-md mb-4">
       <div className="flex items-center mb-2">
         <img src={authorImage} alt={author} className="w-10 h-10 rounded-full mr-2" />
@@ -19,6 +23,8 @@ const Post = ({ title, content, author, authorImage, postDate }) => {
         <button className="text-blue-500">Share</button>
       </div>
     </div>
+   ))};
+   </div>
   );
 };
 

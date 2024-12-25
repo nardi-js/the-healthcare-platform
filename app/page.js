@@ -1,13 +1,14 @@
 import Navbar from "@/components/Navbar";
 import Feed from "@/components/Feed"; // Ensure you import the Feed component
 import Image from "next/image";
+import Post from "@/components/Post";
 
 const posts = [
   { 
     title: "Post 1", 
     content: "This is the first post.", 
     author: "User  1", 
-    authorImage: "/downlad.png", // Replace with actual image path
+    authorImage: "./downlad.png", // Replace with actual image path
     postDate: "2023-10-01" 
   },
   { 
@@ -25,6 +26,7 @@ export default function Home() {
     <div className="flex">
       <Navbar /> {/* Render Navbar on the left */}
       <div className="flex-1"> {/* This div will take the remaining space */}
+      <Post /> {/* Render Post on the left */}
         <Feed posts={posts} /> {/* Render Feed on the right */}
       </div>
     </div>

@@ -1,7 +1,7 @@
 // components/Post.jsx
 import React from 'react';
 
-const Post = ({ title, content, author, authorImage, postDate }) => {
+const Post = ({ title, content, author, authorImage, postDate, posts }) => {
   return (
     <div className="border rounded-lg p-4 shadow-md mb-4">
       <div className="flex items-center mb-2">
