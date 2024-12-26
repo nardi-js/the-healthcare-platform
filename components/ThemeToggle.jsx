@@ -1,27 +1,38 @@
-"use client"; // Mark as a client component
+"use client"; // Mark this component as a Client Component
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { FaSun, FaMoon } from 'react-icons/fa'; // Import icons for sun and moon
 
 const ThemeToggle = () => {
-  const [theme, setTheme] = useState('light');
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
+  // Load the theme from localStorage on initial render
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    setTheme(savedTheme);
-    document.body.className = savedTheme; // Set initial theme
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setIsDarkMode(savedTheme === 'dark');
+      document.body.classList.toggle('dark', savedTheme === 'dark');
+    }
   }, []);
 
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    document.body.className = newTheme;
-    localStorage.setItem('theme', newTheme); // Save theme preference
+    const newTheme = !isDarkMode ? 'dark' : 'light';
+    setIsDarkMode(!isDarkMode);
+    document.body.classList.toggle('dark', !isDarkMode);
+    localStorage.setItem('theme', newTheme); // Save the theme to localStorage
   };
 
   return (
-    <button onClick={toggleTheme} className="text-white">
-      {theme === 'light' ? '🌙' : '☀️'}
-    </button>
+    <div className="flex items-center">
+      <button
+        onClick={toggleTheme}
+        className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors duration-300 
+          ${isDarkMode ? 'bg-gray-800 text-yellow-400' : 'bg-yellow-400 text-gray-800'}`}
+      >
+        {isDarkMode ? <FaSun /> : <FaMoon />}
+      </button>
+      
+    </div>
   );
 };
 

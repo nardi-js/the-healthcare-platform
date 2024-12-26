@@ -1,32 +1,75 @@
-import Navbar from "@/components/Navbar";
-import Feed from "@/components/Feed"; // Ensure you import the Feed component
-import Image from "next/image";
+"use client"; // Mark as a client component
+
+import { Geist, Geist_Mono } from "next/font/google";
+import Sidebar from '../components/Sidebar'; // Import the Sidebar component
+import Header from '../components/Header'; // Import the Header component
+import Post from '../components/Post'; // Import the Post component
+import '../public/styles/globals.css'; // Import global styles
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 const posts = [
   { 
     title: "Post 1", 
     content: "This is the first post.", 
-    author: "User  1", 
-    authorImage: "/downlad.png", // Replace with actual image path
-    postDate: "2023-10-01" 
+    author: "User 1", 
+    authorImage: "/public/download.png", 
+    postDate: "2023-10-01",
+    upvotes: 10, 
+    comments: 5, 
   },
   { 
     title: "Post 2", 
     content: "This is the second post.", 
-    author: "User  2", 
-    authorImage: "/path/to/image2.jpg", // Replace with actual image path
-    postDate: "2023-10-02" 
+    author: "User 2", 
+    authorImage: "/images/image2.jpg", 
+    postDate: "2023-10-02",
+    upvotes: 3, 
+    comments: 2, 
   },
-  // Add more posts as needed
 ];
 
 export default function Home() {
+  const handlePostClick = () => {
+    console.log("Post clicked");
+  };
+
+  const handleAskClick = () => {
+    console.log("Ask a Question clicked");
+  };
+
   return (
-    <div className="flex">
-      <Navbar /> {/* Render Navbar on the left */}
-      <div className="flex-1"> {/* This div will take the remaining space */}
-        <Feed posts={posts} /> {/* Render Feed on the right */}
-      </div>
-    </div>
+    <html lang="en">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <div className="flex min-h-screen">
+          <Sidebar /> {/* Render Sidebar */}
+          <div className="flex-1 ml-64"> {/* Adjust margin for Sidebar */}
+            <Header onPostClick={handlePostClick} onAskClick={handleAskClick} /> {/* Render Header */}
+            <main className="content p-6"> {/* Add padding for content */}
+              {posts.map((post, index) => (
+                <Post
+                  key={index}
+                  title={post.title}
+                  content={post.content}
+                  author={post.author}
+                  authorImage={post.authorImage}
+                  postDate={post.postDate}
+                  upvotes={post.upvotes} 
+                  comments={post.comments} 
+                />
+              ))}
+            </main>
+          </div>
+        </div>
+      </body>
+    </html>
   );
 }

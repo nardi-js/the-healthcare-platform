@@ -1,15 +1,30 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+:root {
+  /* Light mode variables */
+  --bg-color: #ffffff; /* Background color */
+  --text-color: #333333; /* Text color */
+  --border-color: #dddddd; /* Border color */
+  --hover-bg-color: #f1f1f1; /* Hover background */
+  --subtext-color: #555555; /* Subtext color */
+  --button-bg-color: #007bff; /* Button background */
+  --button-text-color: #ffffff; /* Button text */
+}
+
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 0;
+  font-family: Arial, sans-serif; /* Use your preferred font */
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
 
 body.light {
-  background-color: white;
-  color: black;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 body.dark {
-  background-color: black;
-  color: white;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 /* Navbar styles */
@@ -18,53 +33,37 @@ body.dark {
 }
 
 body.light .navbar {
-  background-color: white; /* Light theme background */
-  color: black; /* Light theme text color */
-  border-color: gray; /* Light theme border color */
+  background-color: var(--bg-color); /* Light theme background */
+  color: var(--text-color); /* Light theme text color */
+  border-color: var(--border-color); /* Light theme border color */
 }
 
 body.dark .navbar {
-  background-color: black; /* Dark theme background */
-  color: white; /* Dark theme text color */
-  border-color: white; /* Dark theme border color */
+  background-color: var(--bg-color); /* Dark theme background */
+  color: var(--text-color); /* Dark theme text color */
+  border-color: var(--border-color); /* Dark theme border color */
 }
 
-/* butttons*/
+/* Buttons */
 button {
-    padding: 8px 12px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  button:hover {
-    background-color: rgba(0, 0, 255, 0.1);
-  }
-/* Add to globals.css or a specific CSS file */
-body {
-    margin: 0;
-    font-family: Arial, sans-serif; /* Use your preferred font */
-  }
-  
-  .flex {
-    display: flex;
-  }
-  
-  .flex-1 {
-    flex: 1; /* This will allow the Feed to take the remaining space */
-  }
-  
-  
-  
-  .h-screen {
-    height: 100vh; /* Full height for the Navbar */
-  }
-  
-  .bg-black {
-    background-color: black; /* Navbar background color */
-  }
-  
-  .text-white {
-    color: white; /* Navbar text color */
-  }
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: rgba(0, 0, 255, 0.1);
+}
+
+/* Dark mode variables */
+body.dark {
+  --bg-color: #1a202c; /* Background color */
+  --text-color: #e2e8f0; /* Text color */
+  --border-color: #2d3748; /* Border color */
+  --hover-bg-color: #2d3748; /* Hover background */
+  --subtext-color: #a0aec0; /* Subtext color */
+  --button-bg-color: #2d3748; /* Button background */
+  --button-text-color: #e2e8f0; /* Button text */
+}

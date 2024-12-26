@@ -1,0 +1,58 @@
+:root {
+  /* Light mode variables */
+  --bg-color: #ffffff; /* Background color */
+  --text-color: #333333; /* Text color */
+  --border-color: #dddddd; /* Border color */
+  --hover-bg-color: #f1f1f1; /* Hover background */
+  --subtext-color: #555555; /* Subtext color */
+  --button-bg-color: #007bff; /* Button background */
+  --button-text-color: #ffffff; /* Button text */
+}
+
+body.dark {
+  /* Dark mode variables */
+  --bg-color: #1a202c; /* Background color */
+  --text-color: #e2e8f0; /* Text color */
+  --border-color: #2d3748; /* Border color */
+  --hover-bg-color: #2d3748; /* Hover background */
+  --subtext-color: #a0aec0; /* Subtext color */
+  --button-bg-color: #2d3748; /* Button background */
+  --button-text-color: #e2e8f0; /* Button text */
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+.flex {
+  display: flex;
+}
+
+.min-h-screen {
+  min-height: 100vh;
+}
+
+.ml-64 {
+  margin-left: 16rem;
+}
+
+.p-6 {
+  padding: 1.5rem;
+}
+
+.grid {
+  display: grid;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.gap-4 {
+  gap: 1rem;
+}

@@ -1,0 +1,18 @@
+/* Styles for the Post List */
+.post-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Space between post cards */
+    padding: 20px; /* Padding around the list */
+    background-color: var(--bg-color); /* Background color */
+    border-radius: 15px; /* Slightly more rounded corners */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Enhanced shadow for more depth */
+    max-width: 700px; /* Slightly narrower for a more elegant look */
+    margin: 20px auto; /* Center the container with some vertical margin */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.post-list-container:hover {
+    transform: translateY(-5px); /* Slight lift on hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+}
