@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { FaUserCircle } from 'react-icons/fa'; // Importing an icon for the avatar
-
+import '../public/styles/Header.css'; // Import the CSS file
 const Header = ({ question, setQuestion }) => {
   const handleAskClick = () => {
     console.log("Ask clicked");
@@ -17,15 +17,14 @@ const Header = ({ question, setQuestion }) => {
   };
 
   return (
-    <header className="bg-gray-800 p-4 flex flex-col md:flex-row items-center justify-between">
-      <div className="flex items-center mb-4 md:mb-0">
-        <FaUserCircle className="text-white text-2</div>xl mr-2" />
+    <header className="flex">
+      <div className="flex">
+        <FaUserCircle className="avatar-icon" />
         <input
           type="text"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Ask a question..."
-          className="p-2 rounded-md border border-gray-300"
         />
       </div>
       <div className="flex space-x-4">

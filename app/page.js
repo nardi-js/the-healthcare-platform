@@ -4,7 +4,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Sidebar from '../components/Sidebar'; // Import the Sidebar component
 import Header from '../components/Header'; // Import the Header component
 import Post from '../components/Post'; // Import the Post component
-import '../public/styles/globals.css'; // Import global styles
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,10 +49,10 @@ export default function Home() {
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <div className="flex min-h-screen">
-          <Sidebar /> {/* Render Sidebar */}
-          <div className="flex-1 ml-64"> {/* Adjust margin for Sidebar */}
+          <Sidebar/> {/* Render Sidebar */}
+                <div className="flex-1 ml-64 p-4"> {/* Adjust margin for Sidebar */}
             <Header onPostClick={handlePostClick} onAskClick={handleAskClick} /> {/* Render Header */}
-            <main className="content p-6"> {/* Add padding for content */}
+            <main className="content mt-6"> {/* Add margin-top for main content */}
               {posts.map((post, index) => (
                 <Post
                   key={index}
