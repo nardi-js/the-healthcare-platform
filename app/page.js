@@ -1,3 +1,4 @@
+
 "use client"; // Mark as a client component
 
 import { Geist, Geist_Mono } from "next/font/google";
@@ -19,11 +20,13 @@ const posts = [
   { 
     title: "Post 1", 
     content: "This is the first post.", 
+
     author: "User 1", 
     authorImage: "/public/download.png", 
     postDate: "2023-10-01",
     upvotes: 10, 
     comments: 5, 
+  
   },
   { 
     title: "Post 2", 
@@ -70,5 +73,5 @@ export default function Home() {
         </div>
       </body>
     </html>
-  );
+ );
 }
