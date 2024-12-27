@@ -53,9 +53,7 @@ const Post = ({ title, content, author, authorImage, postDate, userTitle, upvote
         </div>
       )}
     </div>
-   ))};
-   </div>
-  );
-};
 
+);
+};
 export default Post;

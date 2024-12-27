@@ -1,8 +1,9 @@
-"use client"; // Mark this component as a Client Component
+"use client";
+
+import { QuestionsProvider } from '@/context/QuestionsContext';
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Sidebar from '@/components/Sidebar'; // Import Sidebar as default
-
+import Sidebar from '@/components/Sidebar';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,13 +25,14 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <QuestionsProvider>
         <div className="flex">
-          <Sidebar /> {/* Add Sidebar */}
-          <div className="main-content flex-grow" style={{ marginLeft: '250px', marginTop: '64px' }}> {/* Main content area */}
-
+            <Sidebar />
+            <div className="main-content flex-grow" style={{ marginLeft: '250px', marginTop: '64px' }}>
             {children}
           </div>
         </div>
+        </QuestionsProvider>
       </body>
     </html>
   );
