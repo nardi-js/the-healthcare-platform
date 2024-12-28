@@ -1,32 +1,27 @@
 "use client";
 import React, {useState} from 'react'
 import { auth } from "@/lib/firebase"
-import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
 import ThemeToggle from './ThemeToggle';
 import Link from 'next/link';
 
-const SignUp = () => {
+const SignIn = () => {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
 
-  const signUp = async () => {
 
-    if (password !== confirmPassword) {
-      console.log("Passwords do not match");
-      return;
-    }
+  const signIn = async () => {
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password)
+        await signInWithEmailAndPassword(auth, email, password);
     }
     catch (error) {
       console.log(error)
     }
   }
 
-  const signUpWithGoogle = async () => {
+  const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
@@ -36,11 +31,25 @@ const SignUp = () => {
     }
   };
 
+  const resetPassword = async () => {
+    if (!email) {
+      console.log("Please enter your email address.");
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      console.log("Password reset email sent.");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="max-w-md mx-auto mt-10 p-6 border border-gray-300 rounded-lg shadow-lg bg-white dark:bg-gray-800">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-center text-white">Sign Up</h2>
+          <h2 className="text-2xl font-bold text-center text-white">Sign In</h2>
           <ThemeToggle />
         </div>
         <input
@@ -55,20 +64,22 @@ const SignUp = () => {
           className="w-full p-3 mb-4 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-white"
           onChange={(e) => setPassword(e.target.value)}
         />
-        <input
-          type="password"
-          placeholder="Confirm Password"
-          className="w-full p-3 mb-4 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-white"
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
+        <p className="text-right text-gray-600 dark:text-gray-400" >
+          <button
+            onClick={resetPassword}
+            className="text-blue-500 hover:underline"
+          >
+            Forgot Password?
+          </button>
+        </p>
         <button
-          onClick={signUp}
+          onClick={signIn}
           className="w-full p-3 mb-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
         >
-          Sign Up
+          Sign In
         </button>
         <button
-          onClick={signUpWithGoogle}
+          onClick={signInWithGoogle}
           className="w-full p-3 mb-4 bg-white-500 text-black rounded-lg hover:bg-red-600 flex items-center justify-center bg-white border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-white"
         >
           <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48">
@@ -78,12 +89,12 @@ const SignUp = () => {
             <path fill="#34A853" d="M24 48c6.3 0 11.6-2.1 15.5-5.7l-8.2-6.4c-2.3 1.5-5.2 2.4-8.3 2.4-6 0-11.1-4.1-12.9-9.7l-8.2 6.4C6.6 42.6 14.6 48 24 48z"/>
             <path fill="none" d="M0 0h48v48H0z"/>
           </svg>
-          Sign Up with Google
+          Sign In with Google
         </button>
         <p className="text-center text-gray-600 dark:text-gray-400">
-          Already have an account?{' '}
-          <Link href="/sign-in" legacyBehavior>
-            <a className="text-blue-500 hover:underline">Sign In</a>
+          Don't have an account?{' '}
+          <Link href="/sign-up" legacyBehavior>
+            <a className="text-blue-500 hover:underline">Sign Up</a>
           </Link>
         </p>
       </div>
@@ -91,4 +102,4 @@ const SignUp = () => {
   );
 }
 
-export default SignUp
+export default SignIn
