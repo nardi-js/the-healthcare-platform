@@ -2,7 +2,6 @@
 import React, {useState} from 'react'
 import { auth } from "@/lib/firebase"
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
-import ThemeToggle from './ThemeToggle';
 import Link from 'next/link';
 
 const SignIn = () => {
@@ -49,8 +48,7 @@ const SignIn = () => {
     <div className="flex items-center justify-center min-h-screen">
       <div className="max-w-md mx-auto mt-10 p-6 border border-gray-300 rounded-lg shadow-lg bg-white dark:bg-gray-800">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-center text-white">Sign In</h2>
-          <ThemeToggle />
+          <h2 className="text-2xl font-bold text-center text-black">Sign In</h2>
         </div>
         <input
           type="email"
@@ -80,7 +78,7 @@ const SignIn = () => {
         </button>
         <button
           onClick={signInWithGoogle}
-          className="w-full p-3 mb-4 bg-white-500 text-black rounded-lg hover:bg-red-600 flex items-center justify-center bg-white border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-white"
+          className="w-full p-3 mb-4 bg-gray-700 text-white rounded-lg hover:bg-red-400 flex items-center justify-center border border-gray-300 dark:bg-gray-700 dark:text-white"
         >
           <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48">
             <path fill="#EA4335" d="M24 9.5c3.9 0 7.1 1.3 9.5 3.5l7-7C35.9 2.5 30.3 0 24 0 14.6 0 6.6 5.4 2.5 13.3l8.2 6.4C13.1 13.1 18 9.5 24 9.5z"/>

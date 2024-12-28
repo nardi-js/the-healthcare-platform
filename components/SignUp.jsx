@@ -1,30 +1,26 @@
 "use client";
-import React, {useState} from 'react'
-import { auth } from "@/lib/firebase"
+import React, { useState } from 'react';
+import { auth } from "@/lib/firebase";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import ThemeToggle from './ThemeToggle';
 import Link from 'next/link';
 
 const SignUp = () => {
-
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const signUp = async () => {
-
     if (password !== confirmPassword) {
       console.log("Passwords do not match");
       return;
     }
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password)
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      console.log(error);
     }
-    catch (error) {
-      console.log(error)
-    }
-  }
+  };
 
   const signUpWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
@@ -32,7 +28,7 @@ const SignUp = () => {
       const result = await signInWithPopup(auth, provider);
       console.log(result.user);
     } catch (error) {
-      console.log(error);
+      console.log("Error during Google sign-in:", error);
     }
   };
 
@@ -40,8 +36,8 @@ const SignUp = () => {
     <div className="flex items-center justify-center min-h-screen">
       <div className="max-w-md mx-auto mt-10 p-6 border border-gray-300 rounded-lg shadow-lg bg-white dark:bg-gray-800">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-center text-white">Sign Up</h2>
-          <ThemeToggle />
+          <h2 className="text-2xl font-bold text-center text-black">Sign Up</h2>
+
         </div>
         <input
           type="email"
@@ -69,7 +65,7 @@ const SignUp = () => {
         </button>
         <button
           onClick={signUpWithGoogle}
-          className="w-full p-3 mb-4 bg-white-500 text-black rounded-lg hover:bg-red-600 flex items-center justify-center bg-white border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-white"
+          className="w-full p-3 mb-4 bg-gray-700 text-white rounded-lg hover:bg-red-400 flex items-center justify-center"
         >
           <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48">
             <path fill="#EA4335" d="M24 9.5c3.9 0 7.1 1.3 9.5 3.5l7-7C35.9 2.5 30.3 0 24 0 14.6 0 6.6 5.4 2.5 13.3l8.2 6.4C13.1 13.1 18 9.5 24 9.5z"/>
@@ -89,6 +85,6 @@ const SignUp = () => {
       </div>
     </div>
   );
-}
+};
 
-export default SignUp
+export default SignUp;
