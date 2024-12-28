@@ -25,14 +25,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <QuestionsProvider>
-        <div className="flex">
-            <Sidebar />
-            <div className="main-content flex-grow" style={{ marginLeft: '250px', marginTop: '64px' }}>
+        <div>
+            <div>
             {children}
           </div>
         </div>
-        </QuestionsProvider>
       </body>
     </html>
   );
