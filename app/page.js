@@ -17,17 +17,37 @@ const geistMono = Geist_Mono({
 });
 
 const posts = [
-  { 
-    title: "Post 1", 
-    content: "This is the first post.", 
-
-    author: "User 1", 
-    authorImage: "/public/download.png", 
-    postDate: "2023-10-01",
-    upvotes: 10, 
-    comments: 5, 
-  
-  },
+  {
+    id: 'post123',
+    author: {
+      name: 'John Doe',
+      avatar: '/path/to/avatar.jpg'
+    },
+    timestamp: new Date().toISOString(),
+    content: 'This is an exciting post about healthcare!',
+    media: [
+      {
+        type: 'image',
+        url: '/path/to/image1.jpg'
+      },
+      {
+        type: 'video',
+        url: '/path/to/video.mp4'
+      },
+      {
+        type: 'file',
+        url: '/path/to/document.pdf',
+        name: 'Medical Research Paper.pdf'
+      }
+    ],
+    tags: ['healthcare', 'medical', 'research'],
+    initialUpvotes: 10,
+    initialDownvotes: 2,
+    initialComments: [
+      // Your comment structure
+    ]
+  }
+,
   { 
     title: "Post 2", 
     content: "This is the second post.", 
