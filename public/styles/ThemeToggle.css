@@ -1,0 +1,40 @@
+body {
+    background-color: var(--bg-color); /* Background color */
+    color: var(--text-color); /* Text color */
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 25px;
+    background-color: var(--button-bg-color); /* Button background */
+    color: var(--button-text-color); /* Button text color */
+    transition: background-color 0.3s, transform 0.3s;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle:hover {
+    background-color: var(--hover-bg-color); /* Hover background */
+    transform: scale(1.05);
+}
+
+.theme-toggle-icon {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+.theme-toggle-label {
+    font-size: 18px;
+    font-weight: 500;
+}

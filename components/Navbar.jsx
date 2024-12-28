@@ -1,25 +1,20 @@
-import React from 'react'
-import ThemeToggle from './ThemeToggle'; 
+import React from 'react';
+import '../public/styles/Navbar.css'; // Correct the path to the CSS file
+
+
+
 const Navbar = () => {
   return (
-    <div className="w-1/5 bg-black h-screen p-4">
-    <div className="text-red-600 text-3xl font-bold mb-4">TheHealth</div>
-    <ul className="space-y-4">
-        <li className="flex items-center text-white">
-            <i className="fas fa-home mr-2"></i> Home
-        </li>
-        <li className="flex items-center text-white">
-            <i className="fas fa-pen mr-2"></i> profile
-        </li>
-        <li className="flex items-center text-white">
-            <i className="fas fa-book mr-2"></i> Writing
-       </li>
-    </ul>
-    <div className="mt-4">
-        <ThemeToggle /> {/* Add the ThemeToggle button */}
+    <div className="navbar">
+      <div className="logo">Quora</div>
+      <input type="text" className="search-bar" placeholder="Search Quora" />
+      <div className="actions">
+        <i className="fas fa-bell"></i>
+        <i className="fas fa-user-circle"></i>
+        <button className="add-question">Add Question</button>
       </div>
-</div>
+    </div>
   );
-}
+};
 
-export default Navbar
+export default Navbar;

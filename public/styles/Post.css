@@ -1,0 +1,89 @@
+/* Post.css */
+
+.post {
+  border: 1px solid var(--border-color); /* Border color */
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  background-color: var(--bg-color); /* Background color */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+}
+
+.post:hover {
+  transform: translateY(-5px); /* Lift effect on hover */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px; /* Space below header */
+}
+
+.author-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  border: 2px solid var(--border-color); /* Border around image */
+}
+
+.author-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.author-name {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.user-title {
+  font-size: 12px;
+  color: var(--subtext-color); /* Subtext color */
+  margin-top: 2px;
+}
+
+.post-date {
+  font-size: 12px;
+  color: var(--subtext-color); /* Subtext color */
+  margin-top: 2px;
+}
+
+.post-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 10px 0;
+  color: var(--text-color); /* Title color */
+}
+
+.post-content {
+  margin: 10px 0;
+  line-height: 1.6; /* Improved readability */
+  color: var(--text-color); /* Content color */
+}
+
+.post-interactions {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.post-interactions button {
+  margin-right: 10px;
+  padding: 5px 15px;
+  border: none;
+  border-radius: 20px;
+  background-color: var(--button-bg-color); /* Button background */
+  color: var(--button-text-color); /* Button text color */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+}
+
+.post-interactions button:hover {
+  background-color: var(--hover-bg-color); /* Hover background */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+}
