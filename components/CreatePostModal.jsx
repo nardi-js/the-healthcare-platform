@@ -195,6 +195,7 @@ const CreatePostModal = ({ isOpen, onClose }) => {
           >
             Discard
           </button>
+          <input type='text' ></input>
         </div>
       </div>
     </div>
