@@ -1,0 +1,31 @@
+.question-card {
+    border: 1px solid var(--border-color); /* Border color */
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+    width: max-content;
+    background-color: var(--bg-color); /* Background color */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */ 
+}
+
+.post-interactions {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .post-interactions button {
+    margin-right: 10px;
+    padding: 5px 15px;
+    border: none;
+    border-radius: 20px;
+    background-color: var(--button-bg-color); /* Button background */
+    color: var(--button-text-color); /* Button text color */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+  }
+  
+  .post-interactions button:hover {
+    background-color: var(--hover-bg-color); /* Hover background */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+  }

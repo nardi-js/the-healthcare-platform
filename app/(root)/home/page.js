@@ -1,6 +1,7 @@
 
 "use client"; // Mark as a client component
 
+import { useRouter } from 'next/navigation'; // Import useRouter
 import Header from "@/components/Header";
 import Post from "@/components/Post";
 import Sidebar from "@/components/Sidebar";
@@ -62,9 +63,11 @@ export default function Home() {
   const handlePostClick = () => {
     console.log("Post clicked");
   };
+  const router = useRouter(); // Initialize router
+
 
   const handleAskClick = () => {
-    console.log("Ask a Question clicked");
+    router.push('/questions');
   };
 
   return (

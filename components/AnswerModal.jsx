@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { FaImage, FaVideo, FaPaperclip, FaUserCircle } from 'react-icons/fa';
+import { FaImage, FaVideo, FaPaperclip, FaUserCircle, FaTimes } from 'react-icons/fa';
 
 const AnswerModal = ({ isOpen, onClose, questionId }) => {
   // Controlled Input State
   const [answerContent, setAnswerContent] = useState('');
+    const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
+  
   
   // Media Upload State
   const [selectedMedia, setSelectedMedia] = useState([]);
@@ -45,6 +47,19 @@ const AnswerModal = ({ isOpen, onClose, questionId }) => {
     setSelectedMedia(prevMedia => 
       prevMedia.filter(media => media !== mediaToRemove)
     );
+  };
+  const handleCancelClick = () => {
+    if (answerContent.trim() || selectedMedia.length > 0) {
+      setShowCancelConfirmation(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleConfirmCancel = () => {
+    resetForm();
+    setShowCancelConfirmation(false);
+    onClose();
   };
 
   // Reset Form Method
@@ -109,14 +124,20 @@ const AnswerModal = ({ isOpen, onClose, questionId }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-8 rounded-lg w-[700px] max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-6">Submit Your Answer</h2>
+      <div className="bg-white p-8 rounded-lg w-[700px] max-h-[90vh] overflow-y-auto relative">
+        <button 
+          onClick={handleCancelClick}
+          className="absolute top-4 right-4 text-black hover:text-black"
+          >
+          <FaTimes className='text-black'/>
+        </button>
+        <h2 className="text-2xl font-bold text-black mb-6">Submit Your Answer</h2>
 
         {/* Author Info */}
         <div className="flex items-center mb-4">
           <FaUserCircle className="text-4xl mr-4" />
           <div>
-            <p className="font-bold">Current User</p>
+            <p className="font-bold text-black">Current User</p>
           </div>
         </div>
 
@@ -125,10 +146,10 @@ const AnswerModal = ({ isOpen, onClose, questionId }) => {
           value={answerContent}
           onChange={(e) => setAnswerContent(e.target.value)}
           placeholder="Write your answer here..."
-          className="w-full h-40 p-2 border rounded mb-4"
+          className="w-full h-40 p-2 text-black border rounded mb-4"
           maxLength={2000}
         />
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-black mb-4">
           {answerContent.length}/2000 characters
         </p>
 
@@ -145,9 +166,9 @@ const AnswerModal = ({ isOpen, onClose, questionId }) => {
           />
           <button 
             onClick={() => imageInputRef.current.click()}
-            className="flex items-center bg-blue-100 p-2 rounded"
+            className="flex items-center text-black bg-blue-100 p-2 rounded"
           >
-            <FaImage className="mr-2" /> Images
+            <FaImage className="mr-2 text-black" /> Images
           </button>
 
           {/* Video Upload */}
@@ -161,9 +182,9 @@ const AnswerModal = ({ isOpen, onClose, questionId }) => {
           />
           <button 
             onClick={() => videoInputRef.current.click()}
-            className="flex items-center bg-green-100 p-2 rounded"
+            className="flex items-center text-black bg-green-100 p-2 rounded"
           >
-            <FaVideo className="mr-2" /> Videos
+            <FaVideo className="mr-2 text-black" /> Videos
           </button>
 
           {/* File Upload */}
@@ -177,9 +198,9 @@ const AnswerModal = ({ isOpen, onClose, questionId }) => {
           />
           <button 
             onClick={() => fileInputRef.current.click()}
-            className="flex items-center bg-yellow-100 p-2 rounded"
+            className="flex items-center text-black bg-yellow-100 p-2 rounded"
           >
-            <FaPaperclip className="mr-2" /> Files
+            <FaPaperclip className="mr-2 text-black" /> Files
           </button>
         </div>
 
@@ -214,6 +235,28 @@ const AnswerModal = ({ isOpen, onClose, questionId }) => {
           </button>
         </div>
       </div>
+      {showCancelConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-60">
+          <div className="bg-black p-8 rounded-lg w-[400px] text-center">
+            <h2 className="text-xl font-bold mb-4">Discard Answer?</h2>
+            <p className="mb-6">Are you sure you want to discard this answer? All changes will be lost.</p>
+            <div className="flex justify-center space-x-4">
+              <button 
+                onClick={() => setShowCancelConfirmation(false)}
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300"
+              >
+                Keep Editing
+              </button>
+              <button 
+                onClick={handleConfirmCancel}
+                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
