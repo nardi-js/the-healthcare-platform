@@ -9,7 +9,7 @@ const Sidebar = () => {
   return (
     <div className="sidebar">
       <div className="profile">
-        <img src="/path-to-profile-picture.jpg" alt="Profile" className="profile-picture" />
+        <img src="/download.png" alt="Profile" className="profile-picture" />
         <span className="username">Username</span>
       </div>
       <button className="sidebar-button">
