@@ -1,10 +1,11 @@
-
 "use client"; // Mark as a client component
 
 import Header from "@/components/Header";
 import Post from "@/components/Post";
+//import Navbar from "@/components/Navbar"; // Import Navbar
 import Sidebar from "@/components/Sidebar";
 import { Geist, Geist_Mono } from "next/font/google";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -23,41 +24,17 @@ const posts = [
       avatar: '/path/to/avatar.jpg'
     },
     timestamp: new Date().toISOString(),
-    content: 'This is an exciting post about healthcare!',
-    media: [
-      {
-        type: 'image',
-        url: '/path/to/image1.jpg'
-      },
-      {
-        type: 'video',
-        url: '/path/to/video.mp4'
-      },
-      {
-        type: 'file',
-        url: '/path/to/document.pdf',
-        name: 'Medical Research Paper.pdf'
-      }
-    ],
-    tags: ['healthcare', 'medical', 'research'],
-    initialUpvotes: 10,
-    initialDownvotes: 2,
-    initialComments: [
-      // Your comment structure
-    ]
-  }
-,
-  { 
-    title: "Post 2", 
-    content: "This is the second post.", 
-    author: "User 2", 
-    authorImage: "/images/image2.jpg", 
-    postDate: "2023-10-02",
-    upvotes: 3, 
-    comments: 2, 
+    content: 'This is a sample post content.',
+    media: [],
+    tags: [],
+    initialUpvotes: 0,
+    initialDownvotes: 0,
+    initialComments: [],
   },
+  // Add more posts here
 ];
 
+<<<<<<< Updated upstream
 export default function Home() {
   const handlePostClick = () => {
     console.log("Post clicked");
@@ -67,30 +44,34 @@ export default function Home() {
     console.log("Ask a Question clicked");
   };
 
+=======
+const HomePage = () => {
+>>>>>>> Stashed changes
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <div className="flex min-h-screen">
-          <Sidebar /> {/* Render Sidebar */}
-                <div className="flex-1 ml-64 p-4"> {/* Adjust margin for Sidebar */}
-            <Header onPostClick={handlePostClick} onAskClick={handleAskClick} /> {/* Render Header */}
-            <main className="content mt-6"> {/* Add margin-top for main content */}
-              {posts.map((post, index) => (
-                <Post
-                  key={index}
-                  title={post.title}
-                  content={post.content}
-                  author={post.author}
-                  authorImage={post.authorImage}
-                  postDate={post.postDate}
-                  upvotes={post.upvotes} 
-                  comments={post.comments} 
-                />
-              ))}
-            </main>
-          </div>
-        </div>
-      </body>
-    </html>
- );
-}
+    <div className={`${geistSans.variable} ${geistMono.variable}`}>
+      
+      <Header />
+      <div className="flex">
+        <Sidebar />
+        <main className="flex-1 p-4">
+          {posts.map(post => (
+            <Post
+              key={post.id}
+              id={post.id}
+              author={post.author}
+              timestamp={post.timestamp}
+              content={post.content}
+              media={post.media}
+              tags={post.tags}
+              initialUpvotes={post.initialUpvotes}
+              initialDownvotes={post.initialDownvotes}
+              initialComments={post.initialComments}
+            />
+          ))}
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default HomePage;

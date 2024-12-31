@@ -7,6 +7,6 @@ const pageLogin = () => {
      <SignIn />  
     </div>
   )
-}
+} 
 
 export default pageLogin

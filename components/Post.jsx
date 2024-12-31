@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< Updated upstream
 import React, { useState, useEffect } from 'react';
 import '../public/styles/Post.css'; // Importing styles for Post
 
@@ -12,6 +13,10 @@ import {
 } from 'react-icons/fa';
 
 // Import the previously created systems
+=======
+import React, { useState } from 'react';
+import { FaFileAlt, FaPlayCircle, FaExpand } from 'react-icons/fa';
+>>>>>>> Stashed changes
 import VoteSystem from './VoteSystem';
 import CommentSystem from './CommentSystem';
 import ShareSystem from './ShareSystem';
@@ -30,6 +35,7 @@ const Post = ({
   // State for media preview
   const [selectedMedia, setSelectedMedia] = useState(null);
 
+<<<<<<< Updated upstream
   // Content Rendering Utility
   const renderMediaContent = (mediaItem) => {
     switch(mediaItem.type) {
@@ -141,10 +147,32 @@ const Post = ({
               >
                 #{tag}
               </span>
+=======
+  return (
+    <div className="bg-white shadow-md rounded-lg p-4 mb-4">
+      <div className="flex items-center mb-4">
+        <img src={''} alt={`${''}'s avatar`} className="w-10 h-10 rounded-full mr-4" />
+        <div>
+          <h2 className="text-lg font-semibold">{''}</h2>
+          <p className="text-gray-500 text-sm">{new Date(timestamp).toLocaleString()}</p>
+        </div>
+      </div>
+      <div className="mb-4">
+        <p>{content}</p>
+        {media.length > 0 && (
+          <div className="flex flex-wrap -mx-2">
+            {media.map((item, index) => (
+              <div key={index} className="w-1/3 px-2 mb-4" onClick={() => setSelectedMedia(item)}>
+                {item.type === 'image' && <img src={item.url} alt="media" className="w-full h-auto rounded-lg" />}
+                {item.type === 'video' && <FaPlayCircle className="text-4xl text-gray-500" />}
+                {item.type === 'file' && <FaFileAlt className="text-4xl text-gray-500" />}
+              </div>
+>>>>>>> Stashed changes
             ))}
           </div>
         )}
       </div>
+<<<<<<< Updated upstream
 
       {/* Media Gallery */}
       {media.length > 0 && (
@@ -190,10 +218,28 @@ const Post = ({
 
       {/* Media Preview Modal */}
       <MediaPreviewModal />
+=======
+      <div className="flex justify-between items-center">
+        <VoteSystem id={id} initialUpvotes={initialUpvotes} initialDownvotes={initialDownvotes} />
+        <CommentSystem id={id} initialComments={initialComments} />
+        <ShareSystem id={id} />
+      </div>
+      {selectedMedia && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center" onClick={() => setSelectedMedia(null)}>
+          <div className="bg-white p-4 rounded-lg">
+            {selectedMedia.type === 'image' && <img src={selectedMedia.url} alt="media" className="w-full h-auto" />}
+            {selectedMedia.type === 'video' && <video src={selectedMedia.url} controls className="w-full h-auto" />}
+            {selectedMedia.type === 'file' && <FaFileAlt className="text-4xl text-gray-500" />}
+            <FaExpand className="text-2xl text-gray-500 cursor-pointer mt-4" />
+          </div>
+        </div>
+      )}
+>>>>>>> Stashed changes
     </div>
   );
 };
 
+<<<<<<< Updated upstream
 // Example Usage
 const PostPage = () => {
   // Mock post data
@@ -235,4 +281,6 @@ const PostPage = () => {
   );
 };
 
+=======
+>>>>>>> Stashed changes
 export default Post;

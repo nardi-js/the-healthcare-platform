@@ -1,18 +1,54 @@
+//no use for navbar
+
 import React from 'react';
-import '../public/styles/Navbar.css'; // Correct the path to the CSS file
 
-
+import SignUp from '@/components/SignUp';
 
 const Navbar = () => {
+  const { user, logOut } = UserAuth();
+  const navigate = useNavigate();
+  // console.log(user.email)
+
+  const handleLogout = async () => {
+    try {
+      await logOut();
+      navigate('/home');
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
-    <div className="navbar">
-      <div className="logo">Quora</div>
-      <input type="text" className="search-bar" placeholder="Search Quora" />
-      <div className="actions">
-        <i className="fas fa-bell"></i>
-        <i className="fas fa-user-circle"></i>
-        <button className="add-question">Add Question</button>
-      </div>
+    <div className='flex items-center justify-between p-4 z-[100] w-full absolute'>
+      <Link to='/'>
+        <h1 className='text-red-600 text-4xl font-bold cursor-pointer'>
+          NETFLIX
+        </h1>
+      </Link>
+      {user?.email ? (
+        <div>
+          <Link to='/account'>
+            <button className='text-white pr-4'>Account</button>
+          </Link>
+          <button
+            onClick={handleLogout}
+            className='bg-red-600 px-6 py-2 rounded cursor-pointer text-white'
+          >
+            Logout
+          </button>
+        </div>
+      ) : (
+        <div>
+          <Link to='/login'>
+            <button className='text-white pr-4'>Sign In</button>
+          </Link>
+          <Link to='/signup'>
+            <button className='bg-red-600 px-6 py-2 rounded cursor-pointer text-white'>
+              Sign Up
+            </button>
+          </Link>
+        </div>
+      )}
     </div>
   );
 };
