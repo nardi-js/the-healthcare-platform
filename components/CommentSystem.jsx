@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   FaCommentAlt,
   FaPaperPlane,
@@ -7,7 +7,7 @@ import {
   FaEdit,
   FaTrash,
   FaHeart,
-} from 'react-icons/fa';
+} from "react-icons/fa";
 
 const CommentSystem = ({
   postId,
@@ -16,14 +16,14 @@ const CommentSystem = ({
   maxNestingLevel = 3,
 }) => {
   const [comments, setComments] = useState(initialComments);
-  const [newComment, setNewComment] = useState('');
+  const [newComment, setNewComment] = useState("");
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [replyingToCommentId, setReplyingToCommentId] = useState(null);
   const [showComments, setShowComments] = useState(false);
 
   const handleSubmitComment = (parentCommentId = null) => {
     if (!newComment.trim()) {
-      alert('Comment cannot be empty');
+      alert("Comment cannot be empty");
       return;
     }
 
@@ -32,8 +32,8 @@ const CommentSystem = ({
       content: newComment,
       author: {
         id: userId,
-        name: 'Current User',
-        avatar: '/path/to/avatar.jpg',
+        name: "Current User",
+        avatar: "/path/to/avatar.jpg",
       },
       parentCommentId,
       timestamp: new Date().toISOString(),
@@ -45,7 +45,10 @@ const CommentSystem = ({
       setComments((prev) =>
         prev.map((comment) =>
           comment.id === parentCommentId
-            ? { ...comment, replies: [...(comment.replies || []), commentPayload] }
+            ? {
+                ...comment,
+                replies: [...(comment.replies || []), commentPayload],
+              }
             : comment
         )
       );
@@ -53,7 +56,7 @@ const CommentSystem = ({
       setComments((prev) => [commentPayload, ...prev]);
     }
 
-    setNewComment('');
+    setNewComment("");
     setReplyingToCommentId(null);
   };
 
@@ -65,7 +68,7 @@ const CommentSystem = ({
       <div
         key={comment.id}
         className={`comment bg-gray-50 rounded-lg p-4 mb-4 shadow-sm ${
-          depth > 0 ? 'ml-4 border-l-2 pl-2' : ''
+          depth > 0 ? "ml-4 border-l-2 pl-2" : ""
         }`}
         style={{
           opacity: depth >= maxNestingLevel ? 0.5 : 1,
@@ -104,9 +107,7 @@ const CommentSystem = ({
             </button>
             <button
               onClick={() =>
-                setComments((prev) =>
-                  prev.filter((c) => c.id !== comment.id)
-                )
+                setComments((prev) => prev.filter((c) => c.id !== comment.id))
               }
               className="hover:text-red-600"
             >
@@ -126,13 +127,11 @@ const CommentSystem = ({
               onClick={() => {
                 setComments((prev) =>
                   prev.map((c) =>
-                    c.id === comment.id
-                      ? { ...c, content: newComment }
-                      : c
+                    c.id === comment.id ? { ...c, content: newComment } : c
                   )
                 );
                 setEditingCommentId(null);
-                setNewComment('');
+                setNewComment("");
               }}
               className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
             >
@@ -173,7 +172,7 @@ const CommentSystem = ({
         className="flex items-center bg-gray-100 dark:bg-slate-500 p-2 rounded shadow hover:bg-gray-200"
       >
         <FaCommentAlt className="mr-2" />
-        {showComments ? 'Hide Comments' : 'Show Comments'}
+        {showComments ? "Hide Comments" : "Show Comments"}
       </button>
 
       {showComments && (

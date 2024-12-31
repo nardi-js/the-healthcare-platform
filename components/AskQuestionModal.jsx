@@ -1,25 +1,24 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
-import { FaQuestion, FaTags, FaCloudUploadAlt, FaTimes } from 'react-icons/fa';
+import React, { useState, useRef } from "react";
+import { FaQuestion, FaTags, FaCloudUploadAlt, FaTimes } from "react-icons/fa";
 
 const AskQuestionModal = ({ isOpen, onClose }) => {
   // State Management
-  const [questionTitle, setQuestionTitle] = useState('');
-  const [questionDetails, setQuestionDetails] = useState('');
+  const [questionTitle, setQuestionTitle] = useState("");
+  const [questionDetails, setQuestionDetails] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
   const [attachedFiles, setAttachedFiles] = useState([]);
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
-  
 
   // Predefined Tags
   const availableTags = [
-    'Healthcare', 
-    'Medical Research', 
-    'Patient Care', 
-    'Nutrition', 
-    'Mental Health', 
-    'Medical Technology'
+    "Healthcare",
+    "Medical Research",
+    "Patient Care",
+    "Nutrition",
+    "Mental Health",
+    "Medical Technology",
   ];
 
   // File Upload Ref
@@ -27,9 +26,9 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
 
   // Tag Selection Handler
   const handleTagToggle = (tag) => {
-    setSelectedTags(prevTags => 
-      prevTags.includes(tag) 
-        ? prevTags.filter(t => t !== tag)
+    setSelectedTags((prevTags) =>
+      prevTags.includes(tag)
+        ? prevTags.filter((t) => t !== tag)
         : [...prevTags, tag]
     );
   };
@@ -37,20 +36,20 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
   // File Upload Handler
   const handleFileUpload = (event) => {
     const files = Array.from(event.target.files);
-    const validFiles = files.filter(file => {
+    const validFiles = files.filter((file) => {
       // Validate file types and size
-      const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+      const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
       const maxSize = 5 * 1024 * 1024; // 5MB
       return allowedTypes.includes(file.type) && file.size <= maxSize;
     });
 
-    setAttachedFiles(prevFiles => [...prevFiles, ...validFiles]);
+    setAttachedFiles((prevFiles) => [...prevFiles, ...validFiles]);
   };
 
   // Remove Attached File
   const removeFile = (fileToRemove) => {
-    setAttachedFiles(prevFiles => 
-      prevFiles.filter(file => file !== fileToRemove)
+    setAttachedFiles((prevFiles) =>
+      prevFiles.filter((file) => file !== fileToRemove)
     );
   };
   const handleCancelClick = () => {
@@ -89,39 +88,36 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
       alert(validationErrors.join("\n"));
       return;
     }
-    
-
-  
 
     // Prepare Question Payload
     const questionPayload = {
       title: questionTitle,
       details: questionDetails,
       tags: selectedTags,
-      attachments: attachedFiles.map(file => file.name),
+      attachments: attachedFiles.map((file) => file.name),
       timestamp: new Date().toISOString(),
       author: {
-        id: 'current_user_id', // Replace with actual user ID
-        name: 'Current User' // Replace with actual username
+        id: "current_user_id", // Replace with actual user ID
+        name: "Current User", // Replace with actual username
       },
-      status: 'open',
+      status: "open",
       views: 0,
-      answers: 0
+      answers: 0,
     };
 
     try {
       // Simulated API Call (Replace with actual backend integration)
-      console.log('Submitting Question:', questionPayload);
+      console.log("Submitting Question:", questionPayload);
 
       // Optional: File Upload Logic
       const formData = new FormData();
-      attachedFiles.forEach(file => {
-        formData.append('files', file);
+      attachedFiles.forEach((file) => {
+        formData.append("files", file);
       });
 
       // Reset Form
-      setQuestionTitle('');
-      setQuestionDetails('');
+      setQuestionTitle("");
+      setQuestionDetails("");
       setSelectedTags([]);
       setAttachedFiles([]);
 
@@ -129,11 +125,10 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
       onClose();
 
       // Success Notification
-      alert('Question submitted successfully!');
-
+      alert("Question submitted successfully!");
     } catch (error) {
-      console.error('Question Submission Error:', error);
-      alert('Failed to submit question. Please try again.');
+      console.error("Question Submission Error:", error);
+      alert("Failed to submit question. Please try again.");
     }
   };
 
@@ -141,11 +136,11 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
   return isOpen ? (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white p-8 rounded-lg w-[700px] max-h-[90vh] overflow-y-auto relative">
-        <button 
+        <button
           onClick={handleCancelClick}
           className="absolute top-4 right-4 text-black hover:text-black"
-          >
-          <FaTimes className='text-black'/>
+        >
+          <FaTimes className="text-black" />
         </button>
         <h2 className="text-2xl text-black font-bold mb-6 flex items-center">
           <FaQuestion className="mr-3 text-blue-500" /> Ask a Question
@@ -153,9 +148,11 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
 
         {/* Question Title */}
         <div className="mb-4">
-          <label className="block mb-2 text-black font-semibold">Question Title</label>
-          <input 
-            type="text" 
+          <label className="block mb-2 text-black font-semibold">
+            Question Title
+          </label>
+          <input
+            type="text"
             value={questionTitle}
             onChange={(e) => setQuestionTitle(e.target.value)}
             placeholder="What's your healthcare-related question?"
@@ -169,8 +166,10 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
 
         {/* Question Details */}
         <div className="mb-4">
-          <label className="block mb-2 text-black font-semibold">Question Details</label>
-          <textarea 
+          <label className="block mb-2 text-black font-semibold">
+            Question Details
+          </label>
+          <textarea
             value={questionDetails}
             onChange={(e) => setQuestionDetails(e.target.value)}
             placeholder="Provide more context to your question..."
@@ -188,15 +187,17 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
             <FaTags className="mr-2 text-green-500" /> Select Tags
           </label>
           <div className="flex flex-wrap gap-2">
-            {availableTags.map(tag => (
+            {availableTags.map((tag) => (
               <button
                 key={tag}
                 onClick={() => handleTagToggle(tag)}
                 className={`
                   px-3 py-1 rounded-full text-sm 
-                  ${selectedTags.includes(tag) 
-                    ? 'bg-blue-500 text-white' 
-                    : 'bg-gray-200 text-black'}
+                  ${
+                    selectedTags.includes(tag)
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-black"
+                  }
                 `}
               >
                 {tag}
@@ -208,18 +209,18 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
         {/* File Upload */}
         <div className="mb-4">
           <label className="block mb-2 font-semibold text-black items-center">
-            <FaCloudUploadAlt className="mr-2 text-purple-500" /> 
+            <FaCloudUploadAlt className="mr-2 text-purple-500" />
             Attach Files (Optional)
           </label>
-          <input 
-            type="file" 
+          <input
+            type="file"
             ref={fileInputRef}
             onChange={handleFileUpload}
-            multiple 
+            multiple
             accept="image/jpeg,image/png,application/pdf"
             className="hidden "
           />
-          <button 
+          <button
             onClick={() => fileInputRef.current.click()}
             className="bg-gray-200 px-4 py-2 rounded text-black hover:bg-gray-300"
           >
@@ -230,12 +231,12 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
           {attachedFiles.length > 0 && (
             <div className="mt-2">
               {attachedFiles.map((file, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className="flex items-center justify-between bg-gray-100 p-2 rounded mb-1"
                 >
                   <span>{file.name}</span>
-                  <button 
+                  <button
                     onClick={() => removeFile(file)}
                     className="text-red-500 hover:text-red-700"
                   >
@@ -249,8 +250,8 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
 
         {/* Action Buttons */}
         <div className="flex justify-end space-x-4">
-          <button 
-            onClick={handleSubmitQuestion} 
+          <button
+            onClick={handleSubmitQuestion}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             Submit Question
@@ -262,15 +263,18 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-60">
           <div className="bg-white p-8 rounded-lg w-[400px] text-center">
             <h2 className="text-xl font-bold mb-4">Discard Question?</h2>
-            <p className="mb-6">Are you sure you want to discard this question? All changes will be lost.</p>
+            <p className="mb-6">
+              Are you sure you want to discard this question? All changes will
+              be lost.
+            </p>
             <div className="flex justify-center space-x-4">
-              <button 
+              <button
                 onClick={() => setShowCancelConfirmation(false)}
                 className="bg-gray-200 text-black px-4 py-2 rounded-md hover:bg-gray-300"
               >
                 Keep Editing
               </button>
-              <button 
+              <button
                 onClick={handleConfirmCancel}
                 className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
               >

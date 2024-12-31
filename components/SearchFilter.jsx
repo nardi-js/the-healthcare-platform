@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useCallback } from 'react';
-import { FaSearch, FaTimes } from 'react-icons/fa';
+import React, { useState, useCallback } from "react";
+import { FaSearch, FaTimes } from "react-icons/fa";
 
 const SearchFilter = ({
   onSearch,

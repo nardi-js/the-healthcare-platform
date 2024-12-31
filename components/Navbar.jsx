@@ -1,7 +1,5 @@
-import React from 'react';
-import '../public/styles/Navbar.css'; // Correct the path to the CSS file
-
-
+import React from "react";
+import "../public/styles/Navbar.css"; // Correct the path to the CSS file
 
 const Navbar = () => {
   return (

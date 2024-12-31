@@ -1,27 +1,23 @@
 // components/Header.jsx
 "use client";
 
-import React, { useState } from 'react';
-import CreatePostModal from '@/components/CreatePostModal';
-import AskQuestionModal from '@/components/AskQuestionModal';
-import SearchFilter from '@/components/SearchFilter';
+import React, { useState } from "react";
+import CreatePostModal from "@/components/CreatePostModal";
+import AskQuestionModal from "@/components/AskQuestionModal";
+import SearchFilter from "@/components/SearchFilter";
 
-const Header = ({ 
-  onSearchChange, 
-  onFilterChange,
-  onAskClick
-}) => {
+const Header = ({ onSearchChange, onFilterChange, onAskClick }) => {
   // Modal states
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isAskModalOpen, setIsAskModalOpen] = useState(false);
 
   // Categories for search filter
   const categories = [
-    'Medical Research', 
-    'Patient Care', 
-    'Healthcare Technology', 
-    'Nutrition', 
-    'Mental Health'
+    "Medical Research",
+    "Patient Care",
+    "Healthcare Technology",
+    "Nutrition",
+    "Mental Health",
   ];
 
   // Modal handlers
@@ -60,7 +56,7 @@ const Header = ({
     <div className="header-container">
       {/* Search Filter Integration */}
       <div className="search-section mb-4">
-        <SearchFilter 
+        <SearchFilter
           onSearch={handleSearch}
           onFilterChange={handleFilterChange}
           categories={categories}
@@ -71,18 +67,17 @@ const Header = ({
       <div className="flex justify-between items-center">
         {/* User Profile Section */}
 
-
         {/* Action Buttons */}
         <div className="flex space-x-4">
-          <button 
-            onClick={onAskClick} 
+          <button
+            onClick={onAskClick}
             className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
           >
             Ask Question
           </button>
 
-          <button 
-            onClick={handlePostClick} 
+          <button
+            onClick={handlePostClick}
             className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
           >
             Create Post
@@ -91,14 +86,11 @@ const Header = ({
       </div>
 
       {/* Modals */}
-      <CreatePostModal 
-        isOpen={isPostModalOpen} 
-        onClose={handleClosePostModal} 
+      <CreatePostModal
+        isOpen={isPostModalOpen}
+        onClose={handleClosePostModal}
       />
-      <AskQuestionModal 
-        isOpen={isAskModalOpen} 
-        onClose={handleCloseAskModal} 
-      />
+      <AskQuestionModal isOpen={isAskModalOpen} onClose={handleCloseAskModal} />
     </div>
   );
 };

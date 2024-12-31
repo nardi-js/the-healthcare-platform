@@ -6,6 +6,9 @@ import AskQuestionModal from '@/components/AskQuestionModal';
 import QuestionCard from '@/components/QuestionCard';
 import AnswerModal from '@/components/AnswerModal';
 import { FaQuestion, FaCommentAlt } from 'react-icons/fa';
+import Image from 'next/image';
+
+import { db } from '@/lib/firebase';
 
 export default function QuestionsPage() {
   // State Management
@@ -72,7 +75,7 @@ export default function QuestionsPage() {
       {/* Similar to previous AnswerCard implementation */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-4">
-          <img 
+          <Image 
             src={answer.author.avatar} 
             alt={answer.author.name} 
             className="w-12 h-12 rounded-full border-2 border-blue-100"

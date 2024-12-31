@@ -1,8 +1,13 @@
 "use client";
-import React, { useState } from 'react';
-import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import React, { useState } from "react";
+import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 
-const VoteSystem = ({ initialUpvotes = 0, initialDownvotes = 0, postId, userId }) => {
+const VoteSystem = ({
+  initialUpvotes = 0,
+  initialDownvotes = 0,
+  postId,
+  userId,
+}) => {
   // State Management
   const [upvotes, setUpvotes] = useState(initialUpvotes);
   const [downvotes, setDownvotes] = useState(initialDownvotes);
@@ -17,32 +22,32 @@ const VoteSystem = ({ initialUpvotes = 0, initialDownvotes = 0, postId, userId }
 
     try {
       // Update vote counts and user vote
-      if (voteType === 'upvotes') {
-        if (userVote === 'downvotes') {
+      if (voteType === "upvotes") {
+        if (userVote === "downvotes") {
           setDownvotes((prev) => prev - 1);
         }
-        if (userVote !== 'upvotes') {
+        if (userVote !== "upvotes") {
           setUpvotes((prev) => prev + 1);
         }
-        if (userVote === 'upvotes') {
+        if (userVote === "upvotes") {
           setUpvotes((prev) => prev - 1);
           setUserVote(null);
           return;
         }
-        setUserVote('upvotes');
-      } else if (voteType === 'downvotes') {
-        if (userVote === 'upvotes') {
+        setUserVote("upvotes");
+      } else if (voteType === "downvotes") {
+        if (userVote === "upvotes") {
           setUpvotes((prev) => prev - 1);
         }
-        if (userVote !== 'downvotes') {
+        if (userVote !== "downvotes") {
           setDownvotes((prev) => prev + 1);
         }
-        if (userVote === 'downvotes') {
+        if (userVote === "downvotes") {
           setDownvotes((prev) => prev - 1);
           setUserVote(null);
           return;
         }
-        setUserVote('downvotes');
+        setUserVote("downvotes");
       }
 
       // Placeholder for API Call to Persist Vote
@@ -50,9 +55,9 @@ const VoteSystem = ({ initialUpvotes = 0, initialDownvotes = 0, postId, userId }
     } catch (error) {
       console.error("Vote submission failed", error);
       // Rollback changes on error
-      if (voteType === 'upvotes') {
+      if (voteType === "upvotes") {
         setUpvotes((prev) => prev - 1);
-      } else if (voteType === 'downvotes') {
+      } else if (voteType === "downvotes") {
         setDownvotes((prev) => prev - 1);
       }
       setUserVote(null);
@@ -64,9 +69,9 @@ const VoteSystem = ({ initialUpvotes = 0, initialDownvotes = 0, postId, userId }
       <div className="flex items-center space-x-4">
         {/* Upvote Button */}
         <button
-          onClick={() => handleVote('upvotes')}
+          onClick={() => handleVote("upvotes")}
           className={`flex items-center ${
-            userVote === 'upvotes' ? 'text-green-500' : 'text-gray-500'
+            userVote === "upvotes" ? "text-green-500" : "text-gray-500"
           }`}
           aria-label="Upvote"
         >
@@ -76,9 +81,9 @@ const VoteSystem = ({ initialUpvotes = 0, initialDownvotes = 0, postId, userId }
 
         {/* Downvote Button */}
         <button
-          onClick={() => handleVote('downvotes')}
+          onClick={() => handleVote("downvotes")}
           className={`flex items-center ${
-            userVote === 'downvotes' ? 'text-red-500' : 'text-gray-500'
+            userVote === "downvotes" ? "text-red-500" : "text-gray-500"
           }`}
           aria-label="Downvote"
         >

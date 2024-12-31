@@ -1,17 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
-import '../public/styles/Post.css'; // Importing styles for Post
+import React, { useState } from "react";
+import "../public/styles/Post.css"; // Importing styles for Post
 
-import {
-  FaFileAlt,
-  FaPlayCircle,
-  FaExpand,
-} from 'react-icons/fa';
+import { FaFileAlt, FaPlayCircle, FaExpand } from "react-icons/fa";
 
-import VoteSystem from './VoteSystem';
-import CommentSystem from './CommentSystem';
-import ShareSystem from './ShareSystem';
+import VoteSystem from "./VoteSystem";
+import CommentSystem from "./CommentSystem";
+import ShareSystem from "./ShareSystem";
 
 const Post = ({
   id,
@@ -28,7 +24,7 @@ const Post = ({
 
   const renderMediaContent = (mediaItem) => {
     switch (mediaItem.type) {
-      case 'image':
+      case "image":
         return (
           <div
             className="media-item relative cursor-pointer"
@@ -44,7 +40,7 @@ const Post = ({
             </div>
           </div>
         );
-      case 'video':
+      case "video":
         return (
           <div className="media-item relative">
             <video
@@ -59,7 +55,7 @@ const Post = ({
             </div>
           </div>
         );
-      case 'file':
+      case "file":
         return (
           <a
             href={mediaItem.url}
@@ -84,7 +80,7 @@ const Post = ({
         className="fixed inset-0 bg-black bg-opacity-80 z-50 flex justify-center items-center"
         onClick={() => setSelectedMedia(null)}
       >
-        {selectedMedia.type === 'image' ? (
+        {selectedMedia.type === "image" ? (
           <img
             src={selectedMedia.url}
             alt="Full size"
@@ -140,10 +136,10 @@ const Post = ({
         <div
           className={`media-gallery grid ${
             media.length === 1
-              ? 'grid-cols-1'
+              ? "grid-cols-1"
               : media.length === 2
-              ? 'grid-cols-2'
-              : 'grid-cols-3'
+              ? "grid-cols-2"
+              : "grid-cols-3"
           } gap-4 mb-4`}
         >
           {media.map((mediaItem, index) => (
