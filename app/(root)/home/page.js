@@ -34,19 +34,7 @@ const posts = [
   // Add more posts here
 ];
 
-<<<<<<< Updated upstream
-export default function Home() {
-  const handlePostClick = () => {
-    console.log("Post clicked");
-  };
-
-  const handleAskClick = () => {
-    console.log("Ask a Question clicked");
-  };
-
-=======
 const HomePage = () => {
->>>>>>> Stashed changes
   return (
     <div className={`${geistSans.variable} ${geistMono.variable}`}>
       

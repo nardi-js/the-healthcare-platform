@@ -2,13 +2,8 @@
 import React, {useState} from 'react'
 import { auth } from "@/lib/firebase"
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
-<<<<<<< Updated upstream
-import ThemeToggle from './ThemeToggle';
-import Link from 'next/link';
-=======
 import Link from 'next/link'
 //import { UserAuth } from '@/src/AuthContext.js';
->>>>>>> Stashed changes
 
 const SignIn = () => {
 
