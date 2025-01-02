@@ -7,6 +7,7 @@ import {
   getDocs,
   addDoc,
   deleteDoc,
+  updateDoc,
   doc,
 } from "firebase/firestore";
 
@@ -15,6 +16,7 @@ const Page = () => {
   const [newQuestionName, setNewQuestionName] = useState("");
   const [newQuestionDate, setNewQuestionDate] = useState(Number);
   const [newQuestion, setNewQuestion] = useState("");
+  const [updateQuestion, setUdateQuestion] = useState("");
 
   const getQuestionCollection = collection(db, "questions");
 
@@ -36,6 +38,18 @@ const Page = () => {
     try {
       const questionDoc = doc(db, "questions", id);
       await deleteDoc(questionDoc);
+      getQuestionList();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const updateQuestionF = async (id) => {
+    try {
+      const questionDoc = doc(db, "questions", id);
+      await updateDoc(questionDoc, {
+        question: updateQuestion,
+      });
       getQuestionList();
     } catch (error) {
       console.log(error);
@@ -95,6 +109,16 @@ const Page = () => {
             <p>{question}</p>
             <button onClick={() => deleteQuestion(id)} className="bg-slate-400">
               Delete
+            </button>
+            <input
+              placeholder="New Question.."
+              onChange={(e) => setUdateQuestion(e.target.value)}
+            />
+            <button
+              className="bg-slate-400"
+              onClick={() => updateQuestionF(id)}
+            >
+              Update Question
             </button>
           </div>
         ))}

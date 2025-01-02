@@ -2,6 +2,8 @@
 
 import React, { useState, useRef } from "react";
 import { FaQuestion, FaTags, FaCloudUploadAlt, FaTimes } from "react-icons/fa";
+import { db } from "@/lib/firebase";
+import { collection, addDoc } from "firebase/firestore";
 
 const AskQuestionModal = ({ isOpen, onClose }) => {
   // State Management
@@ -52,6 +54,7 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
       prevFiles.filter((file) => file !== fileToRemove)
     );
   };
+
   const handleCancelClick = () => {
     if (questionDetails.trim() || attachedFiles.length > 0) {
       setShowCancelConfirmation(true);
@@ -64,6 +67,13 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
     resetForm();
     setShowCancelConfirmation(false);
     onClose();
+  };
+
+  const resetForm = () => {
+    setQuestionTitle("");
+    setQuestionDetails("");
+    setSelectedTags([]);
+    setAttachedFiles([]);
   };
 
   // Question Submission Handler
@@ -106,8 +116,8 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
     };
 
     try {
-      // Simulated API Call (Replace with actual backend integration)
-      console.log("Submitting Question:", questionPayload);
+      // Firebase API Call
+      await addDoc(collection(db, "questions"), questionPayload);
 
       // Optional: File Upload Logic
       const formData = new FormData();
@@ -116,10 +126,7 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
       });
 
       // Reset Form
-      setQuestionTitle("");
-      setQuestionDetails("");
-      setSelectedTags([]);
-      setAttachedFiles([]);
+      resetForm();
 
       // Close Modal
       onClose();
