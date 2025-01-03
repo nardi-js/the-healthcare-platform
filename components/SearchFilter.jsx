@@ -39,7 +39,7 @@ const SearchFilter = ({
   };
 
   return (
-    <div className="search-filter bg-gray-100 rounded-lg p-4 shadow-md">
+    <div className="search-filte dark:bg-slate-800 rounded-lg p-4 shadow-md">
       <div className="flex items-center relative">
         <input
           type="text"

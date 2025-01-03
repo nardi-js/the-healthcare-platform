@@ -4,7 +4,6 @@
 import { useRouter } from 'next/navigation'; // Import useRouter
 import Header from "@/components/Header";
 import Post from "@/components/Post";
-import Sidebar from "@/components/Sidebar";
 import { Geist, Geist_Mono } from "next/font/google";
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -71,11 +70,9 @@ export default function Home() {
   };
 
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <div className="flex min-h-screen">
-          <Sidebar /> {/* Render Sidebar */}
-                <div className="flex-1 ml-64 p-4"> {/* Adjust margin for Sidebar */}
+      <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <div className="">
+                <div className="p-4"> {/* Adjust margin for Sidebar */}
             <Header onPostClick={handlePostClick} onAskClick={handleAskClick} /> {/* Render Header */}
             <main className="content mt-6"> {/* Add margin-top for main content */}
               {posts.map((post, index) => (
@@ -93,7 +90,6 @@ export default function Home() {
             </main>
           </div>
         </div>
-      </body>
-    </html>
+      </div>
  );
 }
