@@ -23,19 +23,19 @@ const ThemeToggle = () => {
   };
 
   return (
-    <div className="flex items-center">
-      <button
-        onClick={toggleTheme}
-        className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors duration-300 
-          ${
-            isDarkMode
-              ? "bg-gray-800 text-yellow-400"
-              : "bg-yellow-400 text-gray-800"
-          }`}
-      >
-        {isDarkMode ? <FaSun /> : <FaMoon />}
-      </button>
-    </div>
+    <button
+      onClick={toggleTheme}
+      className="flex items-center justify-center cursor-pointer p-3 border-none rounded-full bg-[var(--button-bg-color)] text-[var(--button-text-color)] transition-all duration-300 fixed bottom-5 left-5 shadow-md hover:bg-[var(--hover-bg-color)] hover:scale-105"
+    >
+      {isDarkMode ? (
+        <FaSun className="mr-2 text-lg" />
+      ) : (
+        <FaMoon className="mr-2 text-lg" />
+      )}
+      <span className="text-lg font-medium">
+        {isDarkMode ? "Light Mode" : "Dark Mode"}
+      </span>
+    </button>
   );
 };
 
