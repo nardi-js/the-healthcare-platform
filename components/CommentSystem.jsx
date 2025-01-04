@@ -67,9 +67,9 @@ const CommentSystem = ({
     return (
       <div
         key={comment.id}
-        className={`comment bg-gray-50 rounded-lg p-4 mb-4 shadow-sm ${
+        className={`comment bg-gray-50 dark:bg-slate-700 rounded-lg p-4 mb-4 shadow-sm ${
           depth > 0 ? "ml-4 border-l-2 pl-2" : ""
-        }`}
+        } border border-gray-950 dark:border-gray-200`}
         style={{
           opacity: depth >= maxNestingLevel ? 0.5 : 1,
         }}
@@ -82,14 +82,16 @@ const CommentSystem = ({
               className="w-8 h-8 rounded-full mr-2"
             />
             <div>
-              <span className="font-bold">{comment.author.name}</span>
-              <p className="text-xs text-gray-500">
+              <span className="font-bold text-black dark:text-white">
+                {comment.author.name}
+              </span>
+              <p className="text-xs text-black dark:text-white">
                 {new Date(comment.timestamp).toLocaleString()}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
+          <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-white ">
             <button
               onClick={() => setReplyingToCommentId(comment.id)}
               className="hover:text-blue-600"
@@ -109,7 +111,7 @@ const CommentSystem = ({
               onClick={() =>
                 setComments((prev) => prev.filter((c) => c.id !== comment.id))
               }
-              className="hover:text-red-600"
+              className="hover:text-red-600 "
             >
               <FaTrash /> Delete
             </button>
@@ -121,7 +123,7 @@ const CommentSystem = ({
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border rounded text-black"
             />
             <button
               onClick={() => {
@@ -139,7 +141,7 @@ const CommentSystem = ({
             </button>
           </div>
         ) : (
-          <p className="mt-2 text-gray-700">{comment.content}</p>
+          <p className="mt-2 text-black dark:text-white">{comment.content}</p>
         )}
 
         {isReplying && (
@@ -147,12 +149,12 @@ const CommentSystem = ({
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border rounded  text-black"
               placeholder="Write a reply..."
             />
             <button
               onClick={() => handleSubmitComment(comment.id)}
-              className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
+              className="bg-blue-500 text-white px-4 py-2 rounded mt-2 "
             >
               Submit
             </button>
