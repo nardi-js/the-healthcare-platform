@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
+import { useAuth } from "@/lib/useAuth"; // Import custom hook for authentication
 import { auth, db } from "@/lib/firebase";
 import {
-  signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
   sendPasswordResetEmail,
@@ -11,6 +11,7 @@ import { doc, getDoc } from "firebase/firestore";
 import Link from "next/link";
 
 const SignIn = () => {
+  const signin = useAuth(); // Get the signin function from the custom hook
   const [identifier, setIdentifier] = useState(""); // Can be username or email
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -33,7 +34,7 @@ const SignIn = () => {
         // Assume it's a username
         email = await getEmailFromUsername(identifier);
       }
-      await signInWithEmailAndPassword(auth, email, password);
+      await signin(email, password);
     } catch (error) {
       setError(error.message);
       console.log(error);

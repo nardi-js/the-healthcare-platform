@@ -2,16 +2,14 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth, db } from '@/lib/firebase';
-import {
-  createUserWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithPopup,
-} from "firebase/auth";
+import { useAuth } from '../lib/useAuth'; // Import custom hook for authentication
+import { auth, db } from '../lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import Link from 'next/link';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 const SignUp = () => {
+  const  signup  = useAuth(); // Get the signup function from the custom hook
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,7 +18,7 @@ const SignUp = () => {
   const router = useRouter();
 
   const checkUsernameExists = async (username) => {
-    const docRef = doc(db, 'usernames', username);
+    const docRef = doc(db, 'usernames', username); // Correctly form the document reference
     const docSnap = await getDoc(docRef);
     return docSnap.exists();
   };
@@ -37,13 +35,12 @@ const SignUp = () => {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const user = await signup(email, password);
 
       // Save the username to Firestore
       await setDoc(doc(db, 'usernames', username), { uid: user.uid });
 
-      router.push('/profile'); // Redirect to profile page
+      router.push('/sign-in'); // Redirect to sign-in page
     } catch (error) {
       setError(error.message);
     }
@@ -68,7 +65,7 @@ const SignUp = () => {
         }
       }
 
-      router.push('/profile'); // Redirect to profile page
+      router.push('/sign-in'); // Redirect to sign-in page
     } catch (error) {
       setError('Error during Google sign-in: ' + error.message);
     }

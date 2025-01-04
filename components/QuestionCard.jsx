@@ -6,7 +6,6 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import VoteSystem from "./VoteSystem";
 import CommentSystem from "./CommentSystem";
 import { FaComment, FaTags, FaReply } from "react-icons/fa";
-import "../public/styles/QuestionCard.css";
 
 const QuestionContainer = () => {
   const [questions, setQuestions] = useState([]);
@@ -54,7 +53,7 @@ const QuestionContainer = () => {
 
 const QuestionCard = ({ question, onAnswer }) => {
   return (
-    <div className="question-card bg-white rounded-lg shadow-md p-6 mb-4">
+    <div className="bg-white border border-gray-200 rounded-lg shadow-md p-6 mb-4">
       {/* Question Header */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-2">
@@ -102,7 +101,7 @@ const QuestionCard = ({ question, onAnswer }) => {
       </div>
 
       {/* Interaction Systems */}
-      <div className="post-interactions flex justify-between items-center border-t pt-4">
+      <div className="flex justify-between items-center border-t pt-4">
         <div className="flex items-center space-x-4">
           <VoteSystem
             postId={question.id}
