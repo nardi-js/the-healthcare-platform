@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import { auth } from "@/lib/firebase";
 import {
@@ -7,6 +8,7 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const SignUp = () => {
   const [firstName, setFirstName] = useState("");
@@ -14,6 +16,8 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const router = useRouter();
 
   const signUp = async () => {
     if (password !== confirmPassword) {
@@ -23,6 +27,7 @@ const SignUp = () => {
 
     try {
       await createUserWithEmailAndPassword(auth, email, password);
+      router.push("/home");
     } catch (error) {
       console.log(error);
     }
@@ -31,8 +36,8 @@ const SignUp = () => {
   const signUpWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      console.log(result.user);
+      await signInWithPopup(auth, provider);
+      router.push("/home");
     } catch (error) {
       console.log("Error during Google sign-in:", error);
     }

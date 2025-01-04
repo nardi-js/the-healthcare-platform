@@ -8,14 +8,18 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const router = useRouter();
+
   const signIn = async () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      router.push("/home");
     } catch (error) {
       console.log(error);
     }
@@ -24,8 +28,10 @@ const SignIn = () => {
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      console.log(result.user);
+      
+      await signInWithPopup(auth, provider);
+      router.push("/home");
+      
     } catch (error) {
       console.log(error);
     }

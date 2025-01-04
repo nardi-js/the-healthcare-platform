@@ -7,7 +7,7 @@ export default function Authentication({ children }) {
     <QuestionsProvider >
     <div className="flex">
         <Sidebar />
-        <div className="main-content flex-grow" style={{ marginLeft: '250px', marginTop: '64px' }}>
+        <div className="main-content flex-grow ml-[250px] mt-[8px]">
         {children}
       </div>
     </div>
