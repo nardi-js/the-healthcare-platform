@@ -11,17 +11,27 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const SignUp = () => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
+  const [error, setError] = useState("");
   const router = useRouter();
+
+  const checkUsernameExists = async (username) => {
+    const docRef = doc(db, "usernames", username);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists();
+  };
 
   const signUp = async () => {
     if (password !== confirmPassword) {
-      console.log("Passwords do not match");
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (await checkUsernameExists(username)) {
+      setError("Username already exists");
       return;
     }
 
@@ -29,6 +39,7 @@ const SignUp = () => {
       await createUserWithEmailAndPassword(auth, email, password);
       router.push("/home");
     } catch (error) {
+      setError(error.message);
       console.log(error);
     }
   };
@@ -39,7 +50,8 @@ const SignUp = () => {
       await signInWithPopup(auth, provider);
       router.push("/home");
     } catch (error) {
-      console.log("Error during Google sign-in:", error);
+      setError("Error during Google sign-in: " + error.message);
+      console.log(error);
     }
   };
 
@@ -49,29 +61,29 @@ const SignUp = () => {
         {/* Left Container */}
         <div
           className="w-1/2 bg-cover bg-center relative"
-          style={{ backgroundImage: "url('/bright-white.jpg')" }}
+          style={{ backgroundImage: "url('/flowers.jpg')" }}
         >
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: "url('/trans_bg.png')" }}
           ></div>
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-white p-6"></div>
         </div>
         {/* Right Container */}
         <div className="w-1/2 p-8">
           <h2 className="text-2xl font-bold text-center mb-6 text-black">
             Sign Up
           </h2>
+          {error && (
+            <p className="p-3 bg-red-400 text-white text-center mb-4">
+              {error}
+            </p>
+          )}
           <input
             type="text"
-            placeholder="First Name"
+            placeholder="Username"
             className="w-full p-3 mb-4 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-white"
-            onChange={(e) => setFirstName(e.target.value)}
-          />
-          <input
-            type="text"
-            placeholder="Last Name"
-            className="w-full p-3 mb-4 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-white"
-            onChange={(e) => setLastName(e.target.value)}
+            onChange={(e) => setUsername(e.target.value)}
           />
           <input
             type="email"
@@ -99,7 +111,7 @@ const SignUp = () => {
           </button>
           <button
             onClick={signUpWithGoogle}
-            className="w-full p-3 mb-4 bg-gray-700 text-white rounded-lg hover:bg-red-400 flex items-center justify-center"
+            className="w-full p-3 mb-4 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center justify-center"
           >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48">
               <path

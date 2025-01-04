@@ -1,26 +1,45 @@
 "use client";
 import React, { useState } from "react";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
   sendPasswordResetEmail,
 } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const SignIn = () => {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState(""); // Can be username or email
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const getEmailFromUsername = async (username) => {
+    const docRef = doc(db, "usernames", username);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const userData = docSnap.data();
+      return userData.email;
+    } else {
+      throw new Error("Username does not exist");
+    }
+  };
 
   const router = useRouter();
 
   const signIn = async () => {
     try {
+      let email = identifier;
+      if (!identifier.includes("@")) {
+        // Assume it's a username
+        email = await getEmailFromUsername(identifier);
+      }
       await signInWithEmailAndPassword(auth, email, password);
       router.push("/home");
     } catch (error) {
+      setError(error.message);
       console.log(error);
     }
   };
@@ -28,25 +47,20 @@ const SignIn = () => {
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      
       await signInWithPopup(auth, provider);
       router.push("/home");
-      
     } catch (error) {
+      setError(error.message);
       console.log(error);
     }
   };
 
   const resetPassword = async () => {
-    if (!email) {
-      console.log("Please enter your email address.");
-      return;
-    }
-
     try {
-      await sendPasswordResetEmail(auth, email);
-      console.log("Password reset email sent.");
+      await sendPasswordResetEmail(auth, identifier);
+      setError("Password reset email sent");
     } catch (error) {
+      setError(error.message);
       console.log(error);
     }
   };
@@ -54,30 +68,31 @@ const SignIn = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-purple-300 to-purple-500">
       <div className="flex max-w-5xl w-full bg-white rounded-lg shadow-lg overflow-hidden">
-        {/* Left Container */}
         <div
           className="w-1/2 bg-cover bg-center relative"
-          style={{ backgroundImage: "url('/bright-white.jpg')" }}
+          style={{ backgroundImage: "url('/flowers.jpg')" }}
         >
           <div
-            className="absolute w-19 inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage: "url('/trans_bg.png')",
-              backgroundSize: "90%",
-              backgroundPosition: "center",
-            }}
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url('/trans_bg.png')" }}
           ></div>
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-white p-6"></div>
         </div>
-        {/* Right Container */}
+
         <div className="w-1/2 p-8">
           <h2 className="text-2xl font-bold text-center mb-6 text-black">
             Sign In
           </h2>
+          {error && (
+            <p className="p-3 bg-red-400 text-white text-center mb-4">
+              {error}
+            </p>
+          )}
           <input
-            type="email"
-            placeholder="Email"
+            type="text"
+            placeholder="Username or Email"
             className="w-full p-3 mb-4 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-white"
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setIdentifier(e.target.value)}
           />
           <input
             type="password"
@@ -93,7 +108,7 @@ const SignIn = () => {
           </button>
           <button
             onClick={signInWithGoogle}
-            className="w-full p-3 mb-4 bg-gray-700 text-white rounded-lg hover:bg-red-400 flex items-center justify-center"
+            className="w-full p-3 mb-4 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center justify-center"
           >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48">
               <path
@@ -116,6 +131,15 @@ const SignIn = () => {
             </svg>
             Sign In with Google
           </button>
+          <p className="text-center text-gray-600 dark:text-gray-400">
+            Forgot your password?{" "}
+            <button
+              onClick={resetPassword}
+              className="text-blue-500 hover:underline"
+            >
+              Reset Password
+            </button>
+          </p>
           <p className="text-center text-gray-600 dark:text-gray-400">
             Don't have an account?{" "}
             <Link href="/sign-up" legacyBehavior>

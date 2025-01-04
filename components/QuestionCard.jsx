@@ -6,7 +6,6 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import VoteSystem from "./VoteSystem";
 import CommentSystem from "./CommentSystem";
 import { FaComment, FaTags, FaReply } from "react-icons/fa";
-import "../public/styles/QuestionCard.css";
 
 const QuestionContainer = () => {
   const [questions, setQuestions] = useState([]);
@@ -42,9 +41,9 @@ const QuestionContainer = () => {
   return (
     <div className="space-y-4">
       {questions.map((question) => (
-        <QuestionCard 
-          key={question.id} 
-          question={question} 
+        <QuestionCard
+          key={question.id}
+          question={question}
           onAnswer={(q) => console.log("Answer clicked", q)}
         />
       ))}
@@ -54,7 +53,7 @@ const QuestionContainer = () => {
 
 const QuestionCard = ({ question, onAnswer }) => {
   return (
-    <div className="question-card bg-white rounded-lg shadow-md p-6 mb-4">
+    <div className="container border border-gray-300 rounded-lg p-4 my-4 w-full dark:bg-slate-800 bg-white shadow-md dark:border-slate-700">
       {/* Question Header */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-2">
@@ -103,7 +102,7 @@ const QuestionCard = ({ question, onAnswer }) => {
 
       {/* Interaction Systems */}
       <div className="post-interactions flex justify-between items-center border-t pt-4">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 max-w-24">
           <VoteSystem
             postId={question.id}
             initialUpvotes={question.upvotes || 0}

@@ -4,14 +4,14 @@ import { QuestionsProvider } from "@/context/QuestionsContext";
 export default function Authentication({ children }) {
   return (
     <div>
-    <QuestionsProvider >
-    <div className="flex">
+      <QuestionsProvider>
+      <div className="flex">
         <Sidebar />
         <div className="main-content flex-grow ml-[250px] mt-[8px]">
-        {children}
+          {children}
+        </div>
       </div>
+      </QuestionsProvider>
     </div>
-    </QuestionsProvider>
-  </div>
-  )
+  );
 }
