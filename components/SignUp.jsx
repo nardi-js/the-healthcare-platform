@@ -1,73 +1,88 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '../lib/useAuth'; // Import custom hook for authentication
-import { auth, db } from '../lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import Link from 'next/link';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import React, { useState } from "react";
+import { auth, db } from "@/lib/firebase"; // Import auth and db from Firebase configuration
+import {
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore"; // Import Firestore functions
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const SignUp = () => {
-  const  signup  = useAuth(); // Get the signup function from the custom hook
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // Add loading state
   const router = useRouter();
 
   const checkUsernameExists = async (username) => {
-    const docRef = doc(db, 'usernames', username); // Correctly form the document reference
+    const docRef = doc(db, "usernames", username); // Correctly form the document reference
     const docSnap = await getDoc(docRef);
     return docSnap.exists();
   };
 
   const signUp = async () => {
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
 
     if (await checkUsernameExists(username)) {
-      setError('Username already exists');
+      setError("Username already exists");
       return;
     }
 
     try {
-      const user = await signup(email, password);
+      setLoading(true); // Set loading state to true
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
       // Save the username to Firestore
-      await setDoc(doc(db, 'usernames', username), { uid: user.uid });
+      await setDoc(doc(db, "usernames", username), { uid: user.uid });
 
-      router.push('/sign-in'); // Redirect to sign-in page
+      router.push("/sign-in"); // Redirect to sign-in page
     } catch (error) {
       setError(error.message);
+    } finally {
+      setLoading(false); // Set loading state to false
     }
   };
 
   const signUpWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
+      setLoading(true); // Set loading state to true
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
       // Check if the user already has a username
-      const usernameDoc = await getDoc(doc(db, 'usernames', user.uid));
+      const usernameDoc = await getDoc(doc(db, "usernames", user.uid));
       if (!usernameDoc.exists()) {
         // Prompt the user to enter a username if they don't have one
-        const newUsername = prompt('Please enter a username:');
-        if (newUsername && !(await checkUsernameExists(newUsername))) {
-          await setDoc(doc(db, 'usernames', newUsername), { uid: user.uid });
-        } else {
-          setError('Username already exists or invalid');
-          return;
+        let newUsername = "";
+        while (!newUsername) {
+          newUsername = prompt("Please enter a username:");
+          if (newUsername && !(await checkUsernameExists(newUsername))) {
+            await setDoc(doc(db, "usernames", newUsername), { uid: user.uid });
+          } else {
+            setError("Username already exists or invalid");
+            newUsername = ""; // Reset newUsername to prompt again
+          }
         }
       }
 
-      router.push('/sign-in'); // Redirect to sign-in page
+      router.push("/sign-in"); // Redirect to sign-in page
     } catch (error) {
-      setError('Error during Google sign-in: ' + error.message);
+      if (error.code !== "auth/cancelled-popup-request") {
+        setError("Error during Google sign-in: " + error.message);
+      }
+    } finally {
+      setLoading(false); // Set loading state to false
     }
   };
 
@@ -111,12 +126,14 @@ const SignUp = () => {
           <button
             onClick={signUp}
             className="w-full p-3 mb-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            disabled={loading} // Disable button while loading
           >
-            Sign Up
+            {loading ? "Signing Up..." : "Sign Up"}
           </button>
           <button
             onClick={signUpWithGoogle}
             className="w-full p-3 mb-4 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center justify-center"
+            disabled={loading} // Disable button while loading
           >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48">
               <path fill="#EA4335" d="M24 9.5c3.9 0 7.1 1.3 9.5 3.5l7-7C35.9 2.5 30.3 0 24 0 14.6 0 6.6 5.4 2.5 13.3l8.2 6.4C13.1 13.1 18 9.5 24 9.5z"/>
@@ -125,7 +142,7 @@ const SignUp = () => {
               <path fill="#34A853" d="M24 48c6.3 0 11.6-2.1 15.5-5.7l-8.2-6.4c-2.3 1.5-5.2 2.4-8.3 2.4-6 0-11.1-4.1-12.9-9.7l-8.2 6.4C6.6 42.6 14.6 48 24 48z"/>
               <path fill="none" d="M0 0h48v48H0z"/>
             </svg>
-            Sign Up with Google
+            {loading ? "Signing Up..." : "Sign Up with Google"}
           </button>
           <p className="text-center text-gray-600 dark:text-gray-400">
             Already have an account?{" "}
