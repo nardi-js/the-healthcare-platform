@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
+import { useAuth } from "@/context/useAuth"; // Import custom hook for authentication
 import { auth, db } from "@/lib/firebase";
 import {
-  signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
   sendPasswordResetEmail,
@@ -12,6 +12,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const SignIn = () => {
+  const signin = useAuth(); // Get the signin function from the custom hook
+  //const {signin} = useAuth(); >= This is the original code, but it doesn't work
   const [identifier, setIdentifier] = useState(""); // Can be username or email
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
