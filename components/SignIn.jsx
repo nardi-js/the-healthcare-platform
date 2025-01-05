@@ -3,43 +3,26 @@ import React, { useState } from "react";
 import { useAuth } from "@/context/useAuth"; // Import custom hook for authentication
 import { auth, db } from "@/lib/firebase";
 import {
+  getAuth,
   GoogleAuthProvider,
   signInWithPopup,
   sendPasswordResetEmail,
 } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const SignIn = () => {
-  const signin = useAuth(); // Get the signin function from the custom hook
+  const { signin } = useAuth(); // Get the signin function from the custom hook
   //const {signin} = useAuth(); >= This is the original code, but it doesn't work
-  const [identifier, setIdentifier] = useState(""); // Can be username or email
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
-  const getEmailFromUsername = async (username) => {
-    const docRef = doc(db, "usernames", username);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      const userData = docSnap.data();
-      return userData.email;
-    } else {
-      throw new Error("Username does not exist");
-    }
-  };
-
   const router = useRouter();
 
   const signIn = async () => {
     try {
-      let email = identifier;
-      if (!identifier.includes("@")) {
-        // Assume it's a username
-        email = await getEmailFromUsername(identifier);
-      }
-      await signInWithEmailAndPassword(auth, email, password);
-      router.push("/home");
+      await signin(email, password);
+      router.push("/profile"); // Redirect to profile page after successful sign-in
     } catch (error) {
       setError(error.message);
       console.log(error);
@@ -59,7 +42,7 @@ const SignIn = () => {
 
   const resetPassword = async () => {
     try {
-      await sendPasswordResetEmail(auth, identifier);
+      await sendPasswordResetEmail(getAuth(), email);
       setError("Password reset email sent");
     } catch (error) {
       setError(error.message);
@@ -92,9 +75,9 @@ const SignIn = () => {
           )}
           <input
             type="text"
-            placeholder="Username or Email"
+            placeholder="Enter your Email"
             className="w-full p-3 mb-4 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-white"
-            onChange={(e) => setIdentifier(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <input
             type="password"
