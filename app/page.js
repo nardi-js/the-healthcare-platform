@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
 import {
   collection,
   getDocs,
@@ -19,6 +20,8 @@ const Page = () => {
   const [updateQuestion, setUdateQuestion] = useState("");
 
   const getQuestionCollection = collection(db, "questions");
+
+  const router = useRouter();
 
   const getQuestionList = async () => {
     try {
@@ -58,6 +61,7 @@ const Page = () => {
 
   useEffect(() => {
     getQuestionList();
+    router.push("/home");
   }, []);
 
   const onSubmitQuestion = async () => {
