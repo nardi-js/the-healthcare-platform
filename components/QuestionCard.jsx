@@ -41,9 +41,9 @@ const QuestionContainer = () => {
   return (
     <div className="space-y-4">
       {questions.map((question) => (
-        <QuestionCard 
-          key={question.id} 
-          question={question} 
+        <QuestionCard
+          key={question.id}
+          question={question}
           onAnswer={(q) => console.log("Answer clicked", q)}
         />
       ))}
@@ -53,7 +53,7 @@ const QuestionContainer = () => {
 
 const QuestionCard = ({ question, onAnswer }) => {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-md p-6 mb-4">
+    <div className="container border border-gray-300 rounded-lg p-4 my-4 w-full dark:bg-slate-800 bg-white shadow-md dark:border-slate-700">
       {/* Question Header */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-2">
@@ -101,8 +101,8 @@ const QuestionCard = ({ question, onAnswer }) => {
       </div>
 
       {/* Interaction Systems */}
-      <div className="flex justify-between items-center border-t pt-4">
-        <div className="flex items-center space-x-4">
+      <div className="post-interactions flex justify-between items-center border-t pt-4">
+        <div className="flex items-center space-x-4 max-w-24">
           <VoteSystem
             postId={question.id}
             initialUpvotes={question.upvotes || 0}

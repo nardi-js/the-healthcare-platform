@@ -1,5 +1,5 @@
 "use client"; // Mark this component as a client component
-
+// i hate this so much
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle"; // Import ThemeToggle component

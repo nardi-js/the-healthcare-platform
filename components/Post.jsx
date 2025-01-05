@@ -100,7 +100,7 @@ const Post = ({
   const postUrl = `https://yourplatform.com/posts/${id}`;
 
   return (
-    <div className="post bg-white rounded-lg shadow-md p-6 mb-6 transition-transform hover:shadow-lg">
+    <div className="post bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 mb-6 transition-transform hover:shadow-lg">
       <div className="post-header flex items-center mb-4">
         <img
           src={author.avatar}
@@ -109,14 +109,14 @@ const Post = ({
         />
         <div className="author-info">
           <h3 className="author-name font-bold">{author.name}</h3>
-          <p className="post-date text-gray-500 text-sm">
+          <p className="post-date text-white text-sm">
             {new Date(timestamp).toLocaleString()}
           </p>
         </div>
       </div>
 
       <div className="post-content mb-4">
-        <p className="text-gray-700 leading-relaxed">{content}</p>
+        <p className="text-white leading-relaxed">{content}</p>
 
         {tags.length > 0 && (
           <div className="tags flex flex-wrap mt-2">
