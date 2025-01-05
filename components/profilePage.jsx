@@ -1,6 +1,7 @@
 "use client"; // Mark this component as a client component
-// i hate this so much
+
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle"; // Import ThemeToggle component
 import { useAuth } from "../context/useAuth"; // Import useAuth hook
@@ -8,49 +9,53 @@ import { db } from "@/lib/firebase"; // Import Firestore
 import { collection, getDocs, query, where } from "firebase/firestore";
 
 const ProfilePage = () => {
-  const  user  = useAuth(); // Get the current user from the custom hook
-  //const { user } = useAuth(); <= This is the original code, but it doesn't work
+  const { user } = useAuth(); // Get the current user from the custom hook
+  const router = useRouter(); // Initialize the router
   const [posts, setPosts] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [profilePicture, setProfilePicture] = useState(user?.photoURL || "https://via.placeholder.com/150");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      const fetchPostsAndQuestions = async () => {
-        try {
-          const postsQuery = query(
-            collection(db, "posts"),
-            where("author.id", "==", user.uid)
-          );
-          const postsSnapshot = await getDocs(postsQuery);
-          const postsData = postsSnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          setPosts(postsData);
-
-          const questionsQuery = query(
-            collection(db, "questions"),
-            where("author.id", "==", user.uid)
-          );
-          const questionsSnapshot = await getDocs(questionsQuery);
-          const questionsData = questionsSnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          setQuestions(questionsData);
-
-          setLoading(false);
-        } catch (error) {
-          console.error("Error fetching posts and questions:", error);
-          setLoading(false);
-        }
-      };
-
-      fetchPostsAndQuestions();
+    if (!user) {
+      // Redirect to sign-in page if the user is not signed in
+      router.push("/sign-in");
+      return;
     }
-  }, [user]);
+
+    const fetchPostsAndQuestions = async () => {
+      try {
+        const postsQuery = query(
+          collection(db, "posts"),
+          where("author.id", "==", user.uid)
+        );
+        const postsSnapshot = await getDocs(postsQuery);
+        const postsData = postsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setPosts(postsData);
+
+        const questionsQuery = query(
+          collection(db, "questions"),
+          where("author.id", "==", user.uid)
+        );
+        const questionsSnapshot = await getDocs(questionsQuery);
+        const questionsData = questionsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setQuestions(questionsData);
+
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching posts and questions:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchPostsAndQuestions();
+  }, [user, router]);
 
   const handleProfilePictureChange = (event) => {
     const file = event.target.files[0];
@@ -62,10 +67,6 @@ const ProfilePage = () => {
       reader.readAsDataURL(file);
     }
   };
-
-  if (!user) {
-    return <div>Please sign in to view your profile.</div>;
-  }
 
   if (loading) {
     return <div>Loading posts and questions...</div>;

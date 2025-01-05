@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import { useAuth } from "@/context/useAuth"; // Import custom hook for authentication
-import { auth, db } from "@/lib/firebase";
+import { useAuth } from "../context/useAuth"; // Import custom hook for authentication
+import { auth } from "@/lib/firebase";
 import {
   getAuth,
   GoogleAuthProvider,

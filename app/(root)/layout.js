@@ -1,10 +1,11 @@
-import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar"; // Import the Navbar component
+import Sidebar from "@/components/Sidebar";
 import { QuestionsProvider } from "@/context/QuestionsContext";
+import { AuthProvider } from "@/context/useAuth"; // Import the AuthProvider
 
-export default function Authentication({ children }) {
+export default function Layout({ children }) {
   return (
-    <div>
+    <AuthProvider>
       <QuestionsProvider>
         <Navbar /> {/* Include the Navbar component */}
         <div className="flex">
@@ -14,6 +15,6 @@ export default function Authentication({ children }) {
           </div>
         </div>
       </QuestionsProvider>
-    </div>
+    </AuthProvider>
   );
 }

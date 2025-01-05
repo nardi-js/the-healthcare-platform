@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '../context/useAuth'; // Adjust the path if necessary
 
 const Navbar = () => {
-  const user = useAuth(); // Get the current user and signout function from the custom hook
+  const { user, signout } = useAuth(); // Get the current user and signout function from the custom hook
   //const  { user, signout }  = useAuth(); <= This is the original code, but it doesn't work
 
   return (
