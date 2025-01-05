@@ -18,9 +18,9 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  return context;
 };
-
 const useProvideAuth = () => {
   const [user, setUser] = useState(null);
 
@@ -49,14 +49,7 @@ const useProvideAuth = () => {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser(user);
-      } else {
-        setUser(null);
-      }
-    });
-
+    const unsubscribe = onAuthStateChanged(auth, (user) => setUser (user));
     return () => unsubscribe();
   }, []);
 
