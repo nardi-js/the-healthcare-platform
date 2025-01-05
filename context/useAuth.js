@@ -6,7 +6,7 @@ import {
   signOut,
   createUserWithEmailAndPassword,
 } from "firebase/auth";
-import { app } from "../lib/firebase"; // Import your Firebase app configuration
+import { app } from "../lib/firebase";
 
 const auth = getAuth(app);
 
