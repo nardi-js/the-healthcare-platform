@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import "../public/styles/Post.css"; // Importing styles for Post
+import '@/public/styles/Post.css'; // Importing styles for Post
 
 import { FaFileAlt, FaPlayCircle, FaExpand } from "react-icons/fa";
 
