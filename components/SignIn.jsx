@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { useAuth } from "../context/useAuth"; // Import custom hook for authentication
+import { useAuth, signin } from "../context/useAuth"; // Import custom hook for authentication
 import { auth } from "@/lib/firebase";
 import {
   getAuth,
@@ -12,7 +12,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const SignIn = () => {
-  const { signin } = useAuth(); // Get the signin function from the custom hook
+  const {signin}  = useAuth(); // Get the signin function from the custom hook
   //const {signin} = useAuth(); >= This is the original code, but it doesn't work
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

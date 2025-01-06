@@ -13,7 +13,7 @@ const ProfilePage = () => {
   const router = useRouter(); // Initialize the router
   const [posts, setPosts] = useState([]);
   const [questions, setQuestions] = useState([]);
-  const [profilePicture, setProfilePicture] = useState(user?.photoURL || "https://via.placeholder.com/150");
+  const [profilePicture, setProfilePicture] = useState(user?.photoURL || "./public/download.png");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -69,7 +69,7 @@ const ProfilePage = () => {
   };
 
   if (loading) {
-    return <div>Loading posts and questions...</div>;
+    return <div className="ml-[250px] mt-[8px]">Loading posts and questions...</div>;
   }
 
   return (
