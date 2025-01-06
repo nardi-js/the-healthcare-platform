@@ -1,45 +1,73 @@
-"use client"; // Mark this component as a client component
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { useAuth } from '../context/useAuth'; // Adjust the path if necessary
+import Link from "next/link";
+import Image from "next/image";
+import { FaBars, FaSearch } from "react-icons/fa";
+import { useAuth } from "@/context/useAuth";
+import { useSidebar } from "@/context/SidebarContext";
+import UserMenu from "./UserMenu";
+import ThemeToggle from "./ThemeToggle";
 
-const Navbar = () => {
-  const { user, signout } = useAuth(); // Get the current user and signout function from the custom hook
-  //const  { user, signout }  = useAuth(); <= This is the original code, but it doesn't work
+export default function Navbar() {
+  const { user } = useAuth();
+  const { toggleSidebar } = useSidebar();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    // Add search functionality here
+  };
 
   return (
-    <nav className="bg-gray-800 p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <Link href="/" legacyBehavior>
-          <a className="text-white text-lg font-bold">TheHealth</a>
-        </Link>
-        <div>
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-900 border-b border-gray-800">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        {/* Left section */}
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={toggleSidebar}
+            className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-600"
+          >
+            <FaBars className="w-5 h-5" />
+          </button>
+          
+          <Link href="/home" className="flex items-center space-x-2">
+            <Image
+              src="/trans_bg.png"
+              alt="TheHealth Logo"
+              width={32}
+              height={32}
+              className="w-8 h-8"
+            />
+            <span className="text-xl font-semibold text-white">TheHealth</span>
+          </Link>
+        </div>
+
+        {/* Search Bar */}
+        <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-lg mx-4">
+          <div className="relative w-full">
+            <input
+              type="text"
+              placeholder="Search..."
+              className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          </div>
+        </form>
+
+        {/* Right section */}
+        <div className="flex items-center space-x-4">
+          <ThemeToggle />
           {user ? (
-            <button
-              onClick={signout}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-            >
-              Sign Out
-            </button>
+            <UserMenu user={user} />
           ) : (
-            <>
-              <Link href="/sign-in" legacyBehavior>
-                <a className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mr-2">
-                  Sign In
-                </a>
-              </Link>
-              <Link href="/sign-up" legacyBehavior>
-                <a className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                  Sign Up
-                </a>
-              </Link>
-            </>
+            <Link
+              href="/auth/signin"
+              className="text-white hover:text-gray-200 font-medium"
+            >
+              Sign In
+            </Link>
           )}
         </div>
       </div>
     </nav>
   );
-};
-
-export default Navbar;
+}

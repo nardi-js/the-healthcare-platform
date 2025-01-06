@@ -1,42 +1,22 @@
-"use client"; // Mark this component as a Client Component
+"use client";
 
-import React, { useState, useEffect } from "react";
-import { FaSun, FaMoon } from "react-icons/fa"; // Import icons for sun and moon
+import { FaMoon, FaSun } from "react-icons/fa";
+import { useTheme } from "@/context/ThemeContext";
 
-const ThemeToggle = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  // Load the theme from localStorage on initial render
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      setIsDarkMode(savedTheme === "dark");
-      document.body.classList.toggle("dark", savedTheme === "dark");
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = !isDarkMode ? "dark" : "light";
-    setIsDarkMode(!isDarkMode);
-    document.body.classList.toggle("dark", !isDarkMode);
-    localStorage.setItem("theme", newTheme); // Save the theme to localStorage
-  };
+export default function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <button
       onClick={toggleTheme}
-      className="flex items-center justify-center cursor-pointer p-3 border-none rounded-full bg-[var(--button-bg-color)] text-[var(--button-text-color)] transition-all duration-300 fixed bottom-5 left-5 shadow-md hover:bg-[var(--hover-bg-color)] hover:scale-105"
+      className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-600"
+      aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
     >
-      {isDarkMode ? (
-        <FaSun className="mr-2 text-lg" />
+      {theme === 'light' ? (
+        <FaMoon className="w-5 h-5" />
       ) : (
-        <FaMoon className="mr-2 text-lg" />
+        <FaSun className="w-5 h-5" />
       )}
-      <span className="text-lg font-medium">
-        {isDarkMode ? "Light Mode" : "Dark Mode"}
-      </span>
     </button>
   );
-};
-
-export default ThemeToggle;
+}

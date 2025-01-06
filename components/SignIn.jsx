@@ -1,52 +1,68 @@
 "use client";
-import React, { useState } from "react";
-import { useAuth, signin } from "../context/useAuth"; // Import custom hook for authentication
-import { auth } from "@/lib/firebase";
+import React, { useState, useEffect } from "react";
 import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
+  useAuth,
+  signin,
+  signInWithGoogle,
   sendPasswordResetEmail,
-} from "firebase/auth";
+} from "../context/useAuth"; // Import custom hook for authentication
+import { auth } from "@/lib/firebase";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const SignIn = () => {
-  const {signin}  = useAuth(); // Get the signin function from the custom hook
-  //const {signin} = useAuth(); >= This is the original code, but it doesn't work
+  const {
+    signin,
+    signInWithGoogle,
+    error: authError,
+    loading: authLoading,
+    clearError,
+  } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const signIn = async () => {
+  useEffect(() => {
+    if (authError) {
+      setError(authError);
+    }
+    return () => clearError();
+  }, [authError, clearError]);
+
+  const validateForm = () => {
+    if (!email || !password) {
+      setError("All fields are required");
+      return false;
+    }
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError("Please enter a valid email address");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
     try {
       await signin(email, password);
-      router.push("/profile"); // Redirect to profile page after successful sign-in
-    } catch (error) {
-      setError(error.message);
-      console.log(error);
-    }
-  };
-
-  const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
       router.push("/home");
     } catch (error) {
-      setError(error.message);
-      console.log(error);
+      console.error("Sign in error:", error);
     }
   };
 
-  const resetPassword = async () => {
+  const handleGoogleSignIn = async () => {
     try {
-      await sendPasswordResetEmail(getAuth(), email);
-      setError("Password reset email sent");
+      await signInWithGoogle();
+      router.push("/home");
     } catch (error) {
-      setError(error.message);
-      console.log(error);
+      if (error.code !== "auth/cancelled-popup-request") {
+        console.error("Google sign in error:", error);
+      }
     }
   };
 
@@ -54,81 +70,105 @@ const SignIn = () => {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-purple-300 to-purple-500">
       <div className="flex max-w-5xl w-full bg-white rounded-lg shadow-lg overflow-hidden">
         <div
-          className="w-1/2 bg-cover bg-center relative"
+          className="w-1/2 bg-cover bg-center relative hidden md:block"
           style={{ backgroundImage: "url('/flowers.jpg')" }}
         >
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url('/trans_bg.png')" }}
-          ></div>
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-white p-6"></div>
+          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         </div>
 
-        <div className="w-1/2 p-8">
-          <h2 className="text-2xl font-bold text-center mb-6 text-black">
-            Sign In
+        <div className="w-full md:w-1/2 p-8">
+          <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
+            Welcome Back
           </h2>
+
           {error && (
-            <p className="p-3 bg-red-400 text-white text-center mb-4">
-              {error}
-            </p>
+            <div className="p-3 mb-4 bg-red-100 border border-red-400 text-red-700 rounded relative">
+              <span className="block sm:inline">{error}</span>
+            </div>
           )}
-          <input
-            type="text"
-            placeholder="Enter your Email"
-            className="w-full p-3 mb-4 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-white"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full p-3 mb-4 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-white"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button
-            onClick={signIn}
-            className="w-full p-3 mb-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-          >
-            Sign In
-          </button>
-          <button
-            onClick={signInWithGoogle}
-            className="w-full p-3 mb-4 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center justify-center"
-          >
-            <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48">
-              <path
-                fill="#EA4335"
-                d="M24 9.5c3.9 0 7.1 1.3 9.5 3.5l7-7C35.9 2.5 30.3 0 24 0 14.6 0 6.6 5.4 2.5 13.3l8.2 6.4C13.1 13.1 18 9.5 24 9.5z"
+
+          <form onSubmit={handleSignIn} className="space-y-4">
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                placeholder="Enter your email"
+                disabled={authLoading}
               />
-              <path
-                fill="#4285F4"
-                d="M46.5 24c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3.2-2.5 5.9-5.2 7.7l8.2 6.4C44.6 38.6 46.5 31.8 46.5 24z"
+            </div>
+
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                placeholder="Enter your password"
+                disabled={authLoading}
               />
-              <path
-                fill="#FBBC05"
-                d="M10.7 28.7c-1.1-3.2-1.1-6.7 0-9.9L2.5 13.3C-1.1 20.1-1.1 27.9 2.5 34.7l8.2-6z"
-              />
-              <path
-                fill="#34A853"
-                d="M24 48c6.3 0 11.6-2.1 15.5-5.7l-8.2-6.4c-2.3 1.5-5.2 2.4-8.3 2.4-6 0-11.1-4.1-12.9-9.7l-8.2 6.4C6.6 42.6 14.6 48 24 48z"
-              />
-              <path fill="none" d="M0 0h48v48H0z" />
-            </svg>
-            Sign In with Google
-          </button>
-          <p className="text-center text-gray-600 dark:text-gray-400">
-            Forgot your password?{" "}
+            </div>
+
             <button
-              onClick={resetPassword}
-              className="text-blue-500 hover:underline"
+              type="submit"
+              disabled={authLoading}
+              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 ${
+                authLoading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
-              Reset Password
+              {authLoading ? "Signing in..." : "Sign In"}
             </button>
-          </p>
-          <p className="text-center text-gray-600 dark:text-gray-400">
+          </form>
+
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={handleGoogleSignIn}
+              disabled={authLoading}
+              className="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            >
+              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"
+                />
+              </svg>
+              Sign in with Google
+            </button>
+          </div>
+
+          <p className="mt-4 text-center text-sm text-gray-600">
             Don't have an account?{" "}
-            <Link href="/sign-up" legacyBehavior>
-              <a className="text-blue-500 hover:underline">Sign Up</a>
+            <Link
+              href="/sign-up"
+              className="font-medium text-purple-600 hover:text-purple-500"
+            >
+              Sign up
             </Link>
           </p>
         </div>

@@ -1,20 +1,27 @@
-import Navbar from "@/components/Navbar"; // Import the Navbar component
-import Sidebar from "@/components/Sidebar";
-import { QuestionsProvider } from "@/context/QuestionsContext";
-import { AuthProvider } from "@/context/useAuth"; // Import the AuthProvider
+"use client";
 
-export default function Layout({ children }) {
+import Navbar from "@/components/Navbar";
+import Sidebar from "@/components/Sidebar";
+import { useSidebar } from "@/context/SidebarContext";
+
+export default function RootLayout({ children }) {
+  const { isSidebarOpen } = useSidebar();
+
   return (
-    <AuthProvider>
-      <QuestionsProvider>
-        <Navbar /> {/* Include the Navbar component */}
-        <div className="flex">
-          <Sidebar />
-          <div className="main-content flex-grow ml-[250px] mt-[8px]">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Navbar />
+      <div className="flex">
+        <Sidebar />
+        <main 
+          className={`flex-1 transition-all duration-300 ease-in-out ${
+            isSidebarOpen ? 'ml-64' : 'ml-0'
+          }`}
+        >
+          <div className="pt-16">
             {children}
           </div>
-        </div>
-      </QuestionsProvider>
-    </AuthProvider>
+        </main>
+      </div>
+    </div>
   );
 }

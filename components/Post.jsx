@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import '@/public/styles/Post.css'; // Importing styles for Post
-
+import { useAuth } from "@/context/useAuth";
 import { FaFileAlt, FaPlayCircle, FaExpand } from "react-icons/fa";
 
 import VoteSystem from "./VoteSystem";
@@ -12,15 +12,23 @@ import ShareSystem from "./ShareSystem";
 const Post = ({
   id,
   author,
+  title,
   timestamp,
   content,
   media = [],
   tags = [],
+  category,
+  status = 'published',
   initialUpvotes = 0,
   initialDownvotes = 0,
   initialComments = [],
+  isProfileView = false, // New prop to handle profile view
+  onEdit, // New prop for editing
+  onDelete, // New prop for deleting
 }) => {
+  const { user } = useAuth();
   const [selectedMedia, setSelectedMedia] = useState(null);
+  const [showFullContent, setShowFullContent] = useState(!isProfileView);
 
   const renderMediaContent = (mediaItem) => {
     switch (mediaItem.type) {
@@ -35,7 +43,7 @@ const Post = ({
               alt="Post media"
               className="w-full h-64 object-cover rounded-lg transition-transform hover:scale-105"
             />
-            <div className="absolute top-2 right-2 bg-black  bg-opacity-50 text-black p-1 rounded">
+            <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white p-1 rounded">
               <FaExpand />
             </div>
           </div>
@@ -72,101 +80,147 @@ const Post = ({
     }
   };
 
-  const MediaPreviewModal = () => {
-    if (!selectedMedia) return null;
-
-    return (
-      <div
-        className="fixed inset-0 bg-black bg-opacity-80 z-50 flex justify-center items-center"
-        onClick={() => setSelectedMedia(null)}
-      >
-        {selectedMedia.type === "image" ? (
-          <img
-            src={selectedMedia.url}
-            alt="Full size"
-            className="max-w-full max-h-full object-contain"
-          />
-        ) : (
-          <video
-            src={selectedMedia.url}
-            controls
-            className="max-w-full max-h-full"
-          />
-        )}
-      </div>
-    );
+  const truncateContent = (text, maxLength = 200) => {
+    if (text.length <= maxLength) return text;
+    return `${text.substring(0, maxLength)}...`;
   };
 
   const postUrl = `https://yourplatform.com/posts/${id}`;
 
   return (
-    <div className="post bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 mb-6 transition-transform hover:shadow-lg">
-      <div className="post-header flex items-center mb-4">
-        <img
-          src={author.avatar}
-          alt={author.name}
-          className="author-image rounded-full mr-4 w-12 h-12"
-        />
-        <div className="author-info">
-          <h3 className="author-name font-bold">{author.name}</h3>
-          <p className="post-date text-white text-sm">
-            {new Date(timestamp).toLocaleString()}
-          </p>
+    <div className={`post-container bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 ${isProfileView ? 'border-l-4 border-purple-500' : ''}`}>
+      {/* Post Header */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center space-x-3">
+          <img
+            src={author.avatar}
+            alt={author.name}
+            className="w-10 h-10 rounded-full"
+          />
+          <div>
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+              {author.name}
+            </h3>
+            <p className="text-sm text-gray-500">
+              {new Date(timestamp).toLocaleString()}
+            </p>
+          </div>
         </div>
-      </div>
-
-      <div className="post-content mb-4">
-        <p className="text-white leading-relaxed">{content}</p>
-
-        {tags.length > 0 && (
-          <div className="tags flex flex-wrap mt-2">
-            {tags.map((tag, index) => (
-              <span
-                key={index}
-                className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full mr-2 mb-2 cursor-pointer hover:bg-blue-200"
-              >
-                #{tag}
-              </span>
-            ))}
+        
+        {isProfileView && (
+          <div className="flex space-x-2">
+            <button
+              onClick={() => onEdit(id)}
+              className="text-sm px-3 py-1 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => onDelete(id)}
+              className="text-sm px-3 py-1 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+            >
+              Delete
+            </button>
           </div>
         )}
       </div>
 
+      {/* Post Title */}
+      <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-gray-100">
+        {title}
+      </h2>
+
+      {/* Post Content */}
+      <div className="mb-4">
+        <p className="text-gray-700 dark:text-gray-300">
+          {isProfileView ? truncateContent(content) : content}
+        </p>
+        {isProfileView && content.length > 200 && (
+          <button
+            onClick={() => setShowFullContent(!showFullContent)}
+            className="text-purple-600 hover:text-purple-700 text-sm mt-2"
+          >
+            {showFullContent ? 'Show less' : 'Read more'}
+          </button>
+        )}
+      </div>
+
+      {/* Media Content */}
       {media.length > 0 && (
-        <div
-          className={`media-gallery grid ${
-            media.length === 1
-              ? "grid-cols-1"
-              : media.length === 2
-              ? "grid-cols-2"
-              : "grid-cols-3"
-          } gap-4 mb-4`}
-        >
+        <div className="media-container grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {media.map((mediaItem, index) => (
-            <div key={index} className="media-wrapper">
-              {renderMediaContent(mediaItem)}
-            </div>
+            <div key={index}>{renderMediaContent(mediaItem)}</div>
           ))}
         </div>
       )}
 
-      <div className="post-interactions flex justify-between items-center border-t pt-4">
-        <VoteSystem
-          postId={id}
-          initialUpvotes={initialUpvotes}
-          initialDownvotes={initialDownvotes}
-        />
+      {/* Tags and Category */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {category && (
+          <span className="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full">
+            {category}
+          </span>
+        )}
+        {tags.map((tag, index) => (
+          <span
+            key={index}
+            className="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full"
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
 
-        <div className="flex items-center space-x-4">
-          <ShareSystem url={postUrl} title={`Post by ${author.name}`} />
+      {/* Status Badge (if in profile view) */}
+      {isProfileView && (
+        <div className="mb-4">
+          <span
+            className={`text-xs px-2 py-1 rounded-full ${
+              status === 'published'
+                ? 'bg-green-100 text-green-800'
+                : 'bg-yellow-100 text-yellow-800'
+            }`}
+          >
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+          </span>
         </div>
-      </div>
+      )}
 
-      <div className="comments-section mt-4">
-        <CommentSystem postId={id} initialComments={initialComments} />
-      </div>
+      {/* Interaction Components */}
+      {!isProfileView && (
+        <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <VoteSystem
+            postId={id}
+            userId={user?.uid}
+            initialUpvotes={initialUpvotes}
+            initialDownvotes={initialDownvotes}
+          />
+          <CommentSystem postId={id} initialComments={initialComments} />
+          <ShareSystem url={postUrl} />
+        </div>
+      )}
 
-      <MediaPreviewModal />
+      {/* Media Preview Modal */}
+      {selectedMedia && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-80 z-50 flex justify-center items-center"
+          onClick={() => setSelectedMedia(null)}
+        >
+          {selectedMedia.type === "image" ? (
+            <img
+              src={selectedMedia.url}
+              alt="Full size"
+              className="max-w-full max-h-full object-contain"
+            />
+          ) : (
+            <video
+              src={selectedMedia.url}
+              controls
+              className="max-w-full max-h-full"
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 };

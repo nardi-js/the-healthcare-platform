@@ -1,132 +1,99 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { db } from "@/lib/firebase";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import VoteSystem from "./VoteSystem";
-import CommentSystem from "./CommentSystem";
-import { FaComment, FaTags, FaReply } from "react-icons/fa";
+import React from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { formatDistanceToNow } from "date-fns";
+import { FaEye, FaComment, FaTags, FaUser } from "react-icons/fa";
 
-const QuestionContainer = () => {
-  const [questions, setQuestions] = useState([]);
-  const [loading, setLoading] = useState(true);
+const QuestionCard = ({ question }) => {
+  const {
+    id,
+    title,
+    author,
+    createdAt,
+    tags = [],
+    views = 0,
+    answers = [],
+    category,
+  } = question;
 
-  useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        const q = query(
-          collection(db, "questions"),
-          orderBy("timestamp", "desc")
-        );
-        const querySnapshot = await getDocs(q);
-        const questionData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setQuestions(questionData);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching questions:", error);
-        setLoading(false);
-      }
-    };
-
-    fetchQuestions();
-  }, []);
-
-  if (loading) {
-    return <div>Loading questions...</div>;
-  }
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "Just now";
+    
+    // Handle Firestore Timestamp
+    const date = timestamp?.toDate?.() || new Date(timestamp);
+    
+    if (!(date instanceof Date) || isNaN(date)) {
+      return "Invalid date";
+    }
+    
+    try {
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "Date error";
+    }
+  };
 
   return (
-    <div className="space-y-4">
-      {questions.map((question) => (
-        <QuestionCard
-          key={question.id}
-          question={question}
-          onAnswer={(q) => console.log("Answer clicked", q)}
-        />
-      ))}
-    </div>
-  );
-};
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden border border-gray-200 dark:border-gray-700"
+    >
+      <Link href={`/question/${id}`} className="block p-6">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200">
+              {title}
+            </h3>
+            
+            <div className="mt-2 flex flex-wrap gap-2">
+              {tags?.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200"
+                >
+                  {tag}
+                </span>
+              ))}
+              {category && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                  {category}
+                </span>
+              )}
+            </div>
+          </div>
 
-const QuestionCard = ({ question, onAnswer }) => {
-  return (
-    <div className="container border border-gray-300 rounded-lg p-4 my-4 w-full dark:bg-slate-800 bg-white shadow-md dark:border-slate-700">
-      {/* Question Header */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center space-x-2">
-          <img
-            src={question.author?.avatar || "/default-avatar.png"}
-            alt={question.author?.name || "Anonymous"}
-            className="w-10 h-10 rounded-full"
-          />
-          <div>
-            <p className="font-semibold">
-              {question.author?.name || "Anonymous"}
-            </p>
-            <p className="text-sm text-gray-500">
-              {new Date(question.timestamp).toLocaleString()}
-            </p>
+          <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center space-x-1">
+              <FaEye className="w-4 h-4" />
+              <span>{views}</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <FaComment className="w-4 h-4" />
+              <span>{answers?.length || 0}</span>
+            </div>
           </div>
         </div>
 
-        {/* Question Stats */}
-        <div className="flex items-center space-x-4 text-gray-600">
-          <div className="flex items-center">
-            <FaComment className="mr-2" />
-            <span>{question.answers || 0}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Question Title and Details */}
-      <h2 className="text-xl font-bold mb-2">{question.title}</h2>
-      <p className="text-gray-700 mb-4">{question.details}</p>
-
-      {/* Tags */}
-      <div className="flex items-center mb-4">
-        <FaTags className="mr-2 text-gray-500" />
-        <div className="flex flex-wrap gap-2">
-          {question.tags?.map((tag) => (
-            <span
-              key={tag}
-              className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
-            >
-              {tag}
+        <div className="mt-4 flex items-center justify-between text-sm">
+          <div className="flex items-center space-x-2">
+            <div className="w-6 h-6 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
+              <FaUser className="w-3 h-3 text-gray-500 dark:text-gray-400" />
+            </div>
+            <span className="text-gray-600 dark:text-gray-300">
+              {author?.displayName || "Anonymous"}
             </span>
-          ))}
+            <span className="text-gray-400 dark:text-gray-500">
+              {formatDate(createdAt)}
+            </span>
+          </div>
         </div>
-      </div>
-
-      {/* Interaction Systems */}
-      <div className="post-interactions flex justify-between items-center border-t pt-4">
-        <div className="flex items-center space-x-4 max-w-24">
-          <VoteSystem
-            postId={question.id}
-            initialUpvotes={question.upvotes || 0}
-            initialDownvotes={question.downvotes || 0}
-          />
-          <button
-            onClick={() => onAnswer(question)}
-            className="flex items-center text-white px-4 py-2 rounded-full bg-blue-500 hover:bg-blue-600 transition-colors"
-          >
-            <FaReply className="mr-2" />
-            Answer
-          </button>
-        </div>
-      </div>
-
-      {/* Comments Section */}
-      <div className="mt-4">
-        <CommentSystem
-          postId={question.id}
-          initialComments={question.comments || []}
-        />
-      </div>
-    </div>
+      </Link>
+    </motion.div>
   );
 };
 
-export default QuestionContainer;
+export default QuestionCard;
