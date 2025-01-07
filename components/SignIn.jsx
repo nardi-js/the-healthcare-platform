@@ -1,52 +1,68 @@
 "use client";
+
 import React, { useState } from "react";
-import { useAuth, signin } from "../context/useAuth"; // Import custom hook for authentication
-import { auth } from "@/lib/firebase";
-import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  sendPasswordResetEmail,
-} from "firebase/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+  db,
+  auth,
+  provider,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+} from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 const SignIn = () => {
-  const {signin}  = useAuth(); // Get the signin function from the custom hook
-  //const {signin} = useAuth(); >= This is the original code, but it doesn't work
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const signIn = async () => {
+  const SignInWithEmailAndPasswordCustom = async (e) => {
+    e.preventDefault();
     try {
-      await signin(email, password);
-      router.push("/profile"); // Redirect to profile page after successful sign-in
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        console.log("Sign-in successful! User profile:", userDoc.data());
+        alert("Welcome back!");
+        router.push("/home");
+      } else {
+        console.error("User profile does not exist in Firestore.");
+        alert("No account found for this email. Please sign up first.");
+        await auth.signOut();
+      }
     } catch (error) {
-      setError(error.message);
-      console.log(error);
+      console.error("Error signing in:", error.message);
+      alert("An error occurred while signing in. Please try again later.");
     }
   };
 
-  const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
+  const handleGoogleSignIn = async () => {
     try {
-      await signInWithPopup(auth, provider);
-      router.push("/home");
-    } catch (error) {
-      setError(error.message);
-      console.log(error);
-    }
-  };
+      const userCredential = await signInWithPopup(auth, provider);
+      const user = userCredential.user;
 
-  const resetPassword = async () => {
-    try {
-      await sendPasswordResetEmail(getAuth(), email);
-      setError("Password reset email sent");
+      // Check if user exists in Firestore
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        router.push("/home"); // Redirect to home if user exists
+      } else {
+        router.push("/sign-up"); // Redirect to sign-up if user doesn't exist
+      }
     } catch (error) {
-      setError(error.message);
-      console.log(error);
+      console.error("Google Sign-In failed:", error.message);
+      setError("Failed to sign in with Google. Please try again.");
     }
   };
 
@@ -86,13 +102,13 @@ const SignIn = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
           <button
-            onClick={signIn}
+            onClick={SignInWithEmailAndPasswordCustom}
             className="w-full p-3 mb-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
           >
             Sign In
           </button>
           <button
-            onClick={signInWithGoogle}
+            onClick={handleGoogleSignIn}
             className="w-full p-3 mb-4 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center justify-center"
           >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48">
@@ -118,10 +134,7 @@ const SignIn = () => {
           </button>
           <p className="text-center text-gray-600 dark:text-gray-400">
             Forgot your password?{" "}
-            <button
-              onClick={resetPassword}
-              className="text-blue-500 hover:underline"
-            >
+            <button className="text-blue-500 hover:underline">
               Reset Password
             </button>
           </p>

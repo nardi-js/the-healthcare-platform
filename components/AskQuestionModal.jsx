@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { FaQuestion, FaTags, FaCloudUploadAlt, FaTimes } from "react-icons/fa";
 import { db } from "@/lib/firebase";
 import { collection, addDoc } from "firebase/firestore";
+import fetchUserProfile from "@/lib/fetchUserProfile";
 
 const AskQuestionModal = ({ isOpen, onClose }) => {
   // State Management
@@ -99,43 +100,34 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
       return;
     }
 
-    // Prepare Question Payload
-    const questionPayload = {
-      title: questionTitle,
-      details: questionDetails,
-      tags: selectedTags,
-      attachments: attachedFiles.map((file) => file.name),
-      timestamp: new Date().toISOString(),
-      author: {
-        id: "current_user_id", // Replace with actual user ID
-        name: "Current User", // Replace with actual username
-      },
-      status: "open",
-      views: 0,
-      answers: 0,
-    };
-
     try {
-      // Firebase API Call
-      await addDoc(collection(db, "questions"), questionPayload);
+      // Fetch the user profile (returns the user's Firestore data)
+      const user = await fetchUserProfile();
 
-      // Optional: File Upload Logic
-      const formData = new FormData();
-      attachedFiles.forEach((file) => {
-        formData.append("files", file);
+      if (!user) {
+        throw new Error("User profile not found");
+      }
+
+      // Add the question to the questions collection
+      await addDoc(collection(db, "questions"), {
+        title: questionTitle,
+        details: questionDetails,
+        tags: selectedTags,
+        attachments: attachedFiles.map((file) => file.name),
+        timestamp: new Date().toISOString(),
+        author: {
+          id: user.uid, // User ID from the Firestore document
+          name: user.name, // User name from the Firestore document
+          avatar: user.photoURL, // User avatar from the Firestore document
+        },
+        status: "open",
+        views: 0,
+        answers: 0,
       });
 
-      // Reset Form
-      resetForm();
-
-      // Close Modal
-      onClose();
-
-      // Success Notification
-      alert("Question submitted successfully!");
+      console.log("Question added successfully!");
     } catch (error) {
-      console.error("Question Submission Error:", error);
-      alert("Failed to submit question. Please try again.");
+      console.error("Error adding question:", error.message);
     }
   };
 

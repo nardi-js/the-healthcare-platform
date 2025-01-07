@@ -1,12 +1,17 @@
-"use client"; // Mark this component as a client component
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { useAuth } from '../context/useAuth'; // Adjust the path if necessary
+import React from "react";
+import Link from "next/link";
+import { auth, signOut } from "@/lib/firebase";
 
 const Navbar = () => {
-  const { user, signout } = useAuth(); // Get the current user and signout function from the custom hook
-  //const  { user, signout }  = useAuth(); <= This is the original code, but it doesn't work
+  const signout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <nav className="bg-gray-800 p-4">
@@ -15,7 +20,7 @@ const Navbar = () => {
           <a className="text-white text-lg font-bold">TheHealth</a>
         </Link>
         <div>
-          {user ? (
+          {auth.currentUser ? (
             <button
               onClick={signout}
               className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"

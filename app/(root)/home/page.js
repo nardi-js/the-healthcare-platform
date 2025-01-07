@@ -1,4 +1,3 @@
-
 "use client"; // Mark as a client component
 
 import { useRouter } from 'next/navigation'; // Import useRouter

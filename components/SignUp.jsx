@@ -1,15 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { auth, db } from "@/lib/firebase";
 import {
-  createUserWithEmailAndPassword,
-  GoogleAuthProvider,
+  auth,
+  provider,
   signInWithPopup,
-} from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+  db,
+  createUserWithEmailAndPassword,
+} from "@/lib/firebase";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { addDoc, collection, where, query, getDocs } from "firebase/firestore";
 
 const SignUp = () => {
   const [username, setUsername] = useState("");
@@ -20,83 +22,74 @@ const SignUp = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const checkUsernameExists = async (username) => {
-    const docRef = doc(db, "usernames", username);
-    const docSnap = await getDoc(docRef);
-    return docSnap.exists();
-  };
-
-  const signUp = async () => {
-    if (!username || !email || !password || !confirmPassword) {
-      setError("All fields are required");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    if (await checkUsernameExists(username)) {
-      setError("Username already exists");
-      return;
-    }
+  const signUpWithGoogle = async () => {
 
     try {
-      setLoading(true);
-      const userCredential = await createUserWithEmailAndPassword(
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Check if the user already exists in the Firestore
+      const userQuery = query(
+        collection(db, "users"),
+        where("email", "==", user.email)
+      );
+      const existingUsers = await getDocs(userQuery);
+
+      if (!existingUsers.empty) {
+        console.log("User already exists. Skipping creation.");
+      } else {
+        // Add new user to Firestore
+        const userDoc = await addDoc(collection(db, "users"), {
+          uid: user.uid,
+          name: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+          createdAt: new Date(),
+        });
+        console.log("New user added to the database", userDoc.id);
+      }
+
+      router.push("/home");
+    } catch (error) {
+      setError(error.message);
+      console.error(error);
+    }
+  };
+
+
+  const signUpWithEmail = async () => {
+    try {
+      if (password !== confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
+
+      setLoading((loading) => !loading);
+      setError("");
+
+      const result = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
-      const user = userCredential.user;
-
-      await setDoc(doc(db, "usernames", username), {
-        uid: user.uid,
-        email: user.email,
-        createdAt: new Date().toISOString(),
-      });
-
-      router.push("/sign-in");
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const signUpWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      setLoading(true);
-      const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      const usernameDoc = await getDoc(doc(db, "usernames", user.uid));
-      if (!usernameDoc.exists()) {
-        let newUsername = "";
-        while (!newUsername) {
-          newUsername = prompt("Please enter a username:");
-          if (newUsername && !(await checkUsernameExists(newUsername))) {
-            await setDoc(doc(db, "usernames", newUsername), {
-              uid: user.uid,
-              email: user.email,
-              createdAt: new Date().toISOString(),
-            });
-          } else {
-            setError("Username already exists or invalid");
-            newUsername = "";
-          }
-        }
-      }
+      // Add user to the database
+      const userDoc = await addDoc(collection(db, "users"), {
+        uid: user.uid, // Firebase user ID
+        name: username, // Username
+        email: user.email,
+        photoURL: user.photoURL, // Profile picture URL
+        createdAt: new Date(),
+      });
 
-      router.push("/sign-in");
+      console.log("User has been added to the database", userDoc.id);
+      setLoading((loading) => !loading);
+      router.push("/home");
     } catch (error) {
-      if (error.code !== "auth/cancelled-popup-request") {
-        setError("Error during Google sign-in: " + error.message);
-      }
-    } finally {
-      setLoading(false);
+      setError(error.message);
+      console.log(error);
+      setLoading((loading) => !loading);
     }
   };
 
@@ -148,12 +141,13 @@ const SignUp = () => {
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
           <button
-            onClick={signUp}
+            onClick={signUpWithEmail}
             className="w-full p-3 mb-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
             disabled={loading}
           >
             {loading ? "Signing Up..." : "Sign Up"}
           </button>
+
           <button
             onClick={signUpWithGoogle}
             className="w-full p-3 mb-4 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center justify-center disabled:opacity-50"

@@ -1,16 +1,38 @@
 "use client"; // Mark this component as a Client Component
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FaHome, FaUser, FaQuestion } from "react-icons/fa"; // Importing icons from react-icons
 import ThemeToggle from "./ThemeToggle"; // Import the ThemeToggle component
 import Link from "next/link";
+import fetchUserProfile from "@/lib/fetchUserProfile";
 
 const Sidebar = () => {
+  const [user, setUser] = useState({});
+
+  useEffect(() => {
+    async function getUserData() {
+      const userData = await fetchUserProfile();
+      setUser(userData);
+    }
+
+    getUserData();
+  }, []);
+
   return (
-    <div className="bg-[var(--bg-color)] text-[var(--text-color)] w-64 h-screen p-5 flex flex-col fixed transition-colors duration-300 shadow-md rounded-lg z-50">
-      <div className="flex items-center mb-5">
-        <img src="/download.png" alt="Profile" className="w-12 h-12 rounded-full mr-2" />
-        <span className="text-lg font-bold text-[var(--text-color)] ml-2">Username</span>
+    <div
+      className={`bg-[var(--bg-color)] text-[var(--text-color)] w-64 h-screen p-5 flex flex-col fixed transition-colors duration-300 shadow-md rounded-lg z-50 ${
+        !user ? "hidden" : ""
+      }`}
+    >
+      <div className="flex items-center mb-5 ">
+        <img
+          src={user.photoURL}
+          alt="Profile"
+          className="w-12 h-12 rounded-full mr-2"
+        />
+        <span className="text-lg font-bold text-[var(--text-color)] ml-2">
+          {user.name}
+        </span>
       </div>
 
       <Link href="/home">
