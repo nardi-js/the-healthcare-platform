@@ -12,6 +12,7 @@ import {
   FaUserMd,
   FaQuestion,
   FaComments,
+  FaUserShield,
 } from "react-icons/fa";
 
 const Sidebar = () => {
@@ -32,7 +33,11 @@ const Sidebar = () => {
 
   const communityLinks = [
     { name: "Questions", href: "/questions", icon: FaQuestion },
-    { name: "Discussions", href: "/discussions", icon: FaComments },
+    { name: "Posts", href: "/posts", icon: FaComments },
+  ];
+
+  const trustedUserLinks = [
+    { name: "Become Trusted User", href: "/trusted-application", icon: FaUserShield },
   ];
 
   const renderLinks = (links) => {
@@ -75,6 +80,11 @@ const Sidebar = () => {
                 <p className="text-sm font-medium text-white truncate">
                   {user.displayName || user.email}
                 </p>
+                {user.isTrusted && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                    Trusted User
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -105,6 +115,16 @@ const Sidebar = () => {
             </h3>
             <div className="mt-3 space-y-1">{renderLinks(communityLinks)}</div>
           </div>
+
+          {/* Trusted User Section */}
+          {user && !user.isTrusted && (
+            <div>
+              <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Verification
+              </h3>
+              <div className="mt-3 space-y-1">{renderLinks(trustedUserLinks)}</div>
+            </div>
+          )}
         </nav>
       </div>
     </aside>

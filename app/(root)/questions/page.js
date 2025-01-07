@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Header from "@/components/Header";
 import AskQuestionModal from "@/components/AskQuestionModal";
 import QuestionCard from "@/components/QuestionCard";
 import AnswerModal from "@/components/AnswerModal";
@@ -17,6 +16,7 @@ import {
   FaTags,
   FaPlus,
   FaSpinner,
+  FaTimes,
 } from "react-icons/fa";
 import Image from "next/image";
 import { db } from "@/lib/firebase";
@@ -52,16 +52,20 @@ const sortOptions = [
 export default function QuestionsPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("questions");
-  const [isAskModalOpen, setIsAskModalOpen] = useState(false);
   const [isAnswerModalOpen, setIsAnswerModalOpen] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [sortBy, setSortBy] = useState("recent");
+  const [sortBy, setSortBy] = useState("latest");
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [isAskModalOpen, setIsAskModalOpen] = useState(false);
+
+  const onAskClick = () => {
+    setIsAskModalOpen(true);
+  };
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -132,11 +136,7 @@ export default function QuestionsPage() {
   return (
     <div className={`${geist.className} min-h-screen bg-gray-50 dark:bg-gray-900`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header Section */}
         <div className="mb-8">
-          <Header onAskClick={() => setIsAskModalOpen(true)} />
-
-          {/* Search and Filters */}
           <div className="mt-6 space-y-4">
             <div className="flex items-center space-x-4">
               <div className="flex-1 relative">
@@ -212,49 +212,13 @@ export default function QuestionsPage() {
             </AnimatePresence>
           </div>
 
-          {/* Tabs */}
-          <div className="mt-6 flex items-center justify-center sm:justify-start">
-            <div className="flex bg-white dark:bg-gray-800 rounded-lg p-1 shadow-sm">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setActiveTab("questions")}
-                className={`
-                  flex items-center px-4 py-2 rounded-md transition-all duration-300
-                  ${
-                    activeTab === "questions"
-                      ? "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300"
-                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                  }
-                `}
-              >
-                <FaQuestion className="mr-2" />
-                Questions
-                <span className="ml-2 bg-white dark:bg-gray-900 text-purple-600 dark:text-purple-300 px-2 py-0.5 rounded-full text-xs">
-                  {questions.length}
-                </span>
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setActiveTab("answers")}
-                className={`
-                  flex items-center px-4 py-2 rounded-md transition-all duration-300
-                  ${
-                    activeTab === "answers"
-                      ? "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300"
-                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                  }
-                `}
-              >
-                <FaCommentAlt className="mr-2" />
-                Answers
-                <span className="ml-2 bg-white dark:bg-gray-900 text-purple-600 dark:text-purple-300 px-2 py-0.5 rounded-full text-xs">
-                  {answers.length}
-                </span>
-              </motion.button>
-            </div>
-          </div>
+          <button
+            onClick={onAskClick}
+            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center gap-2"
+          >
+            <FaPlus className="w-4 h-4" />
+            Ask a Question
+          </button>
         </div>
 
         {/* Content Section */}
@@ -296,47 +260,28 @@ export default function QuestionsPage() {
                 </AnimatePresence>
               </div>
             ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-12"
-              >
-                <div className="max-w-md mx-auto">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                    {activeTab === "questions"
-                      ? "No questions found"
-                      : "No answers yet"}
-                  </h3>
-                  <p className="text-gray-500 dark:text-gray-400 mb-6">
-                    {searchQuery
-                      ? "No results match your search criteria. Try adjusting your filters."
-                      : activeTab === "questions"
-                      ? "Be the first to ask a question!"
-                      : "Start answering questions to help others."}
-                  </p>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setIsAskModalOpen(true)}
-                    className="inline-flex items-center px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                  >
-                    <FaPlus className="mr-2" />
-                    {activeTab === "questions"
-                      ? "Ask a Question"
-                      : "Find Questions to Answer"}
-                  </motion.button>
-                </div>
-              </motion.div>
+              <div className="col-span-full text-center py-12">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  No questions found
+                </h3>
+                <p className="mt-2 text-gray-600 dark:text-gray-400">
+                  {searchQuery 
+                    ? "Try adjusting your search query or filters"
+                    : "Be the first to ask a question!"}
+                </p>
+                <AskQuestionModal />
+              </div>
             )
           )}
         </main>
       </div>
 
       {/* Modals */}
-      <AskQuestionModal
-        isOpen={isAskModalOpen}
-        onClose={() => setIsAskModalOpen(false)}
-      />
+      <AnimatePresence>
+        {isAskModalOpen && (
+          <AskQuestionModal isOpen={isAskModalOpen} onClose={() => setIsAskModalOpen(false)} />
+        )}
+      </AnimatePresence>
       <AnswerModal
         isOpen={isAnswerModalOpen}
         onClose={() => setIsAnswerModalOpen(false)}
