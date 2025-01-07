@@ -28,7 +28,7 @@ export default function Navbar() {
           >
             <FaBars className="w-5 h-5" />
           </button>
-          
+
           <Link href="/home" className="flex items-center space-x-2">
             <Image
               src="/trans_bg.png"
@@ -48,7 +48,7 @@ export default function Navbar() {
             <UserMenu user={user} />
           ) : (
             <Link
-              href="/auth/signin"
+              href="/sign-in"
               className="text-white hover:text-gray-200 font-medium"
             >
               Sign In

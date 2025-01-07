@@ -25,12 +25,6 @@ const Sidebar = () => {
     { name: "Dashboard", href: "/dashboard", icon: FaChartBar },
   ];
 
-  const healthcareLinks = [
-    { name: "Medical Records", href: "/medical-records", icon: FaNotesMedical },
-    { name: "Appointments", href: "/appointments", icon: FaCalendarAlt },
-    { name: "Find Doctors", href: "/doctors", icon: FaUserMd },
-  ];
-
   const communityLinks = [
     { name: "Questions", href: "/questions", icon: FaQuestion },
     { name: "Posts", href: "/posts", icon: FaComments },
@@ -98,14 +92,6 @@ const Sidebar = () => {
               Main
             </h3>
             <div className="mt-3 space-y-1">{renderLinks(mainLinks)}</div>
-          </div>
-
-          {/* Healthcare */}
-          <div>
-            <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Healthcare
-            </h3>
-            <div className="mt-3 space-y-1">{renderLinks(healthcareLinks)}</div>
           </div>
 
           {/* Community */}

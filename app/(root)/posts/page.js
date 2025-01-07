@@ -55,6 +55,7 @@ export default function PostsPage() {
   const [selectedSort, setSelectedSort] = useState("recent");
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -116,7 +117,11 @@ export default function PostsPage() {
   }, [selectedCategory, selectedSort, searchQuery]);
 
   const handleCreatePost = () => {
-    router.push('/create-post');
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   const handleSearch = (query) => {
@@ -201,6 +206,9 @@ export default function PostsPage() {
           <FaPlus className="w-4 h-4" />
           Create Post
         </button>
+
+        {/* Create Post Modal */}
+        <ModalContent isOpen={isModalOpen} onClose={handleCloseModal} />
 
         {/* Posts Grid */}
         <AnimatePresence mode="wait">
