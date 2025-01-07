@@ -3,13 +3,17 @@
 import React, { useState, useRef } from "react";
 import { FaQuestion, FaTags, FaCloudUploadAlt, FaTimes } from "react-icons/fa";
 import { db } from "@/lib/firebase";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useAuth } from "@/context/useAuth";
 
-const AskQuestionModal = ({ isOpen, onClose }) => {
+const AskQuestionModal = ({ isOpen, onClose, onQuestionSubmitted }) => {
+  const { user } = useAuth();
+
   // State Management
   const [questionTitle, setQuestionTitle] = useState("");
   const [questionDetails, setQuestionDetails] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [attachedFiles, setAttachedFiles] = useState([]);
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
 
@@ -21,6 +25,17 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
     "Nutrition",
     "Mental Health",
     "Medical Technology",
+  ];
+
+  // Predefined categories
+  const categories = [
+    "General Medicine",
+    "Mental Health",
+    "Pediatrics",
+    "Surgery",
+    "Emergency Care",
+    "Chronic Conditions",
+    "Preventive Care",
   ];
 
   // File Upload Ref
@@ -73,6 +88,7 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
     setQuestionTitle("");
     setQuestionDetails("");
     setSelectedTags([]);
+    setSelectedCategory("");
     setAttachedFiles([]);
   };
 
@@ -93,6 +109,10 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
       validationErrors.push("Please select at least one tag");
     }
 
+    if (!selectedCategory) {
+      validationErrors.push("Please select a category");
+    }
+
     // Display Validation Errors
     if (validationErrors.length > 0) {
       alert(validationErrors.join("\n"));
@@ -102,22 +122,25 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
     // Prepare Question Payload
     const questionPayload = {
       title: questionTitle,
-      details: questionDetails,
+      description: questionDetails,
+      category: selectedCategory,
       tags: selectedTags,
       attachments: attachedFiles.map((file) => file.name),
-      timestamp: new Date().toISOString(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
       author: {
-        id: "current_user_id", // Replace with actual user ID
-        name: "Current User", // Replace with actual username
+        id: user.uid,
+        name: user.displayName || "Anonymous",
+        photoURL: user.photoURL || "/download.png"
       },
       status: "open",
-      views: 0,
-      answers: 0,
+      viewCount: 0,
+      answerCount: 0,
     };
 
     try {
       // Firebase API Call
-      await addDoc(collection(db, "questions"), questionPayload);
+      const docRef = await addDoc(collection(db, "questions"), questionPayload);
 
       // Optional: File Upload Logic
       const formData = new FormData();
@@ -130,6 +153,11 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
 
       // Close Modal
       onClose();
+
+      // Notify parent component
+      if (onQuestionSubmitted) {
+        onQuestionSubmitted(docRef.id);
+      }
 
       // Success Notification
       alert("Question submitted successfully!");
@@ -186,6 +214,25 @@ const AskQuestionModal = ({ isOpen, onClose }) => {
           <p className="text-sm text-black mt-1">
             {questionDetails.length}/1000 characters
           </p>
+        </div>
+
+        {/* Category Selection */}
+        <div className="mb-4">
+          <label className="block mb-2 text-black font-semibold">
+            Category
+          </label>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="w-full p-2 border rounded text-black"
+          >
+            <option value="">Select a category</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Tags Selection */}

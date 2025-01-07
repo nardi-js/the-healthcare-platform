@@ -133,6 +133,62 @@ export default function QuestionsPage() {
     setActiveTab("answers");
   };
 
+  const handleQuestionSubmitted = async (questionId) => {
+    // Refresh questions list after new question is submitted
+    const fetchQuestions = async () => {
+      try {
+        setLoading(true);
+        let questionsQuery = query(collection(db, "questions"));
+
+        // Apply filters
+        if (selectedCategory !== "All") {
+          questionsQuery = query(questionsQuery, where("category", "==", selectedCategory));
+        }
+
+        // Apply sorting
+        switch (sortBy) {
+          case "answers":
+            questionsQuery = query(questionsQuery, orderBy("answerCount", "desc"));
+            break;
+          case "views":
+            questionsQuery = query(questionsQuery, orderBy("viewCount", "desc"));
+            break;
+          case "unanswered":
+            questionsQuery = query(questionsQuery, where("answerCount", "==", 0));
+            break;
+          default:
+            questionsQuery = query(questionsQuery, orderBy("createdAt", "desc"));
+        }
+
+        questionsQuery = query(questionsQuery, limit(20));
+        const snapshot = await getDocs(questionsQuery);
+
+        let fetchedQuestions = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          timestamp: doc.data().createdAt?.toDate() || new Date(),
+        }));
+
+        // Apply search filter if query exists
+        if (searchQuery) {
+          fetchedQuestions = fetchedQuestions.filter((question) =>
+            question.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            question.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            question.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+          );
+        }
+
+        setQuestions(fetchedQuestions);
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    await fetchQuestions();
+  };
+
   return (
     <div className={`${geist.className} min-h-screen bg-gray-50 dark:bg-gray-900`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -279,7 +335,11 @@ export default function QuestionsPage() {
       {/* Modals */}
       <AnimatePresence>
         {isAskModalOpen && (
-          <AskQuestionModal isOpen={isAskModalOpen} onClose={() => setIsAskModalOpen(false)} />
+          <AskQuestionModal 
+            isOpen={isAskModalOpen} 
+            onClose={() => setIsAskModalOpen(false)}
+            onQuestionSubmitted={handleQuestionSubmitted}
+          />
         )}
       </AnimatePresence>
       <AnswerModal

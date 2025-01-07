@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import PostCard from "@/components/PostCard";
-import ModalContent from "@/components/CreatePostModal";
+import CreatePostModal from "@/components/CreatePostModal";
 import { db } from "@/lib/firebase";
 import {
   collection,
@@ -208,7 +208,7 @@ export default function PostsPage() {
         </button>
 
         {/* Create Post Modal */}
-        <ModalContent isOpen={isModalOpen} onClose={handleCloseModal} />
+        <CreatePostModal isOpen={isModalOpen} onClose={handleCloseModal} />
 
         {/* Posts Grid */}
         <AnimatePresence mode="wait">

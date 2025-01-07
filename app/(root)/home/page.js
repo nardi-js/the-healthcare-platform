@@ -38,15 +38,23 @@ export default function HomePage() {
         // Fetch trending posts
         const postsQuery = query(
           collection(db, "posts"),
-          orderBy("views", "desc"),
-          limit(3)
+          orderBy("createdAt", "desc"), // First get recent posts
+          limit(10) // Get more posts initially to filter
         );
         const postsSnapshot = await getDocs(postsQuery);
         const postsList = postsSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
           createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt
-        }));
+        }))
+        // Sort by engagement (upvotes - downvotes)
+        .sort((a, b) => {
+          const aEngagement = (a.upvotes || 0) - (a.downvotes || 0);
+          const bEngagement = (b.upvotes || 0) - (b.downvotes || 0);
+          return bEngagement - aEngagement;
+        })
+        .slice(0, 3); // Take top 3 most engaged posts
+        
         setTrendingPosts(postsList);
 
       } catch (error) {

@@ -1,310 +1,240 @@
-// CreatePostModal.jsx
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import dynamic from "next/dynamic";
-import {
-  FaImage,
-  FaVideo,
-  FaPaperclip,
-  FaTags,
-  FaUserCircle,
-  FaTimes,
-  FaTrash,
-} from "react-icons/fa";
+import { useState } from "react";
+import { useAuth } from "@/context/useAuth";
+import { db } from "@/lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { Dialog, Transition } from "@headlessui/react";
+import { Fragment } from "react";
+import { FaTimes } from "react-icons/fa";
 
-// Dynamically import component to ensure client-side rendering
-const CreatePostModal = dynamic(() => import("./CreatePostModal"), {
-  ssr: false,
-});
-
-const ModalContent = ({ isOpen, onClose }) => {
+export default function CreatePostModal({ isOpen, onClose }) {
+  const { user } = useAuth();
   const [postContent, setPostContent] = useState("");
   const [selectedMedia, setSelectedMedia] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
-  const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const imageInputRef = useRef(null);
-  const videoInputRef = useRef(null);
-  const fileInputRef = useRef(null);
-
-  const availableTags = [
-    "Healthcare",
-    "Medical Research",
-    "Patient Care",
-    "Nutrition",
-    "Mental Health",
-    "Medical Technology",
-  ];
-
-  const resetForm = () => {
-    setPostContent("");
-    setSelectedMedia([]);
-    setSelectedTags([]);
+  const handleMediaSelect = (e) => {
+    const files = Array.from(e.target.files);
+    const newMedia = files.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+      type: file.type.startsWith("image/") ? "image" : "video",
+    }));
+    setSelectedMedia((prev) => [...prev, ...newMedia]);
   };
 
-  const handleMediaUpload = (event, type) => {
-    if (typeof window === "undefined") return;
+  const handleTagAdd = (e) => {
+    if (e.key === "Enter" && e.target.value.trim()) {
+      const newTag = e.target.value.trim();
+      if (!selectedTags.includes(newTag)) {
+        setSelectedTags((prev) => [...prev, newTag]);
+      }
+      e.target.value = "";
+    }
+  };
 
-    const files = Array.from(event.target.files);
-    const validFiles = files.filter((file) => {
-      const allowedTypes = {
-        image: ["image/jpeg", "image/png", "image/gif"],
-        video: ["video/mp4", "video/webm"],
-        file: ["application/pdf", "application/doc", "application/docx"],
-      };
-      const maxSize = 50 * 1024 * 1024; // 50MB
-      return allowedTypes[type].includes(file.type) && file.size <= maxSize;
+  const handleTagRemove = (tagToRemove) => {
+    setSelectedTags((prev) => prev.filter((tag) => tag !== tagToRemove));
+  };
+
+  const handleMediaRemove = (index) => {
+    setSelectedMedia((prev) => {
+      const newMedia = [...prev];
+      URL.revokeObjectURL(newMedia[index].preview);
+      newMedia.splice(index, 1);
+      return newMedia;
     });
-
-    setSelectedMedia((prevMedia) => [
-      ...prevMedia,
-      ...validFiles.map((file) => ({
-        file,
-        type,
-        preview: type === "image" ? URL.createObjectURL(file) : null,
-      })),
-    ]);
   };
 
-  useEffect(() => {
-    return () => {
-      selectedMedia.forEach((media) => {
-        if (media.preview) {
-          URL.revokeObjectURL(media.preview);
-        }
-      });
-    };
-  }, [selectedMedia]);
-
-  const removeMedia = (mediaToRemove) => {
-    setSelectedMedia((prevMedia) =>
-      prevMedia.filter((media) => media !== mediaToRemove)
-    );
-  };
-
-  const handleTagToggle = (tag) => {
-    setSelectedTags((prevTags) =>
-      prevTags.includes(tag)
-        ? prevTags.filter((t) => t !== tag)
-        : [...prevTags, tag]
-    );
-  };
-
-  const handleCancelClick = () => {
-    if (postContent.trim() || selectedMedia.length > 0) {
-      setShowCancelConfirmation(true);
-    } else {
-      onClose();
-    }
-  };
-
-  const handleConfirmCancel = () => {
-    resetForm();
-    setShowCancelConfirmation(false);
-    onClose();
-  };
-
-  const handleSubmitPost = async () => {
-    const validationErrors = [];
-
-    if (!postContent.trim()) {
-      validationErrors.push("Post content cannot be empty");
-    }
-
-    if (postContent.length > 2000) {
-      validationErrors.push(
-        "Post content exceeds maximum length of 2000 characters"
-      );
-    }
-
-    if (validationErrors.length > 0) {
-      alert(validationErrors.join("\n"));
+  const handleSubmitPost = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      // Handle not logged in state
+      console.error("User must be logged in to create a post");
       return;
     }
 
-    const postPayload = {
-      content: postContent,
-      media: selectedMedia.map((media) => ({
-        url: media.preview || URL.createObjectURL(media.file),
-        type: media.type,
-      })),
-      tags: selectedTags,
-      timestamp: new Date().toISOString(),
-      author: {
-        id: "current_user_id",
-        name: "Current User",
-        avatar: "/path/to/user/avatar.jpg",
-      },
-    };
+    if (!postContent.trim()) {
+      return;
+    }
 
     try {
-      console.log("Submitting Post:", postPayload);
-      resetForm();
+      setIsSubmitting(true);
+
+      // Prepare Post Payload
+      const postPayload = {
+        content: postContent,
+        media: selectedMedia.map((media) => ({
+          url: media.preview || URL.createObjectURL(media.file),
+          type: media.type,
+        })),
+        tags: selectedTags,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        author: {
+          id: user.uid,
+          name: user.displayName || "Anonymous",
+          avatar: user.photoURL || "/download.png",
+        },
+        upvotes: 0,
+        downvotes: 0,
+        views: 0,
+        commentCount: 0,
+      };
+
+      // Add post to Firestore
+      await addDoc(collection(db, "posts"), postPayload);
+
+      // Clear form
+      setPostContent("");
+      setSelectedMedia([]);
+      setSelectedTags([]);
+
+      // Close modal
       onClose();
-      alert("Post created successfully!");
     } catch (error) {
-      console.error("Post Submission Error:", error);
-      alert("Failed to create post. Please try again.");
+      console.error("Error creating post:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-8 rounded-lg w-[700px] max-h-[90vh] overflow-y-auto relative">
-        <button
-          onClick={handleCancelClick}
-          className="absolute top-4 right-4 text-black hover:text-black"
+    <Transition appear show={isOpen} as={Fragment}>
+      <Dialog as="div" className="relative z-50" onClose={onClose}>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
         >
-          <FaTimes />
-        </button>
+          <div className="fixed inset-0 bg-black bg-opacity-25" />
+        </Transition.Child>
 
-        <h2 className="text-2xl font-bold mb-6 text-black">
-          Create a New Post
-        </h2>
-
-        <textarea
-          value={postContent}
-          onChange={(e) => setPostContent(e.target.value)}
-          placeholder="Write your post here..."
-          className="w-full h-40 p-2 border rounded mb-4 text-black"
-          maxLength={2000}
-        />
-        <p className="text-sm text-black mb-4">
-          {postContent.length}/2000 characters
-        </p>
-
-        <div className="flex space-x-4 mb-4">
-          <input
-            type="file"
-            ref={imageInputRef}
-            onChange={(e) => handleMediaUpload(e, "image")}
-            multiple
-            accept="image/*"
-            className="hidden"
-          />
-          <button
-            onClick={() => imageInputRef.current.click()}
-            className="flex items-center text-black bg-blue-100 p-2 rounded"
-          >
-            <FaImage className="mr-2 text-black" /> Images
-          </button>
-
-          <input
-            type="file"
-            ref={videoInputRef}
-            onChange={(e) => handleMediaUpload(e, "video")}
-            multiple
-            accept="video/*"
-            className="hidden"
-          />
-          <button
-            onClick={() => videoInputRef.current.click()}
-            className="flex items-center text-black bg-green-100 p-2 rounded"
-          >
-            <FaVideo className="mr-2 text-black" /> Videos
-          </button>
-
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={(e) => handleMediaUpload(e, "file")}
-            multiple
-            accept=".pdf,.doc,.docx"
-            className="hidden"
-          />
-          <button
-            onClick={() => fileInputRef.current.click()}
-            className="flex items-center text-black bg-yellow-100 p-2 rounded"
-          >
-            <FaPaperclip className="mr-2 text-black" /> Files
-          </button>
-        </div>
-
-        <div className="mb-4 ">
-          {selectedMedia.map((media, index) => (
-            <div key={index} className="flex items-center mb-2">
-              {media.type === "image" && (
-                <img
-                  src={media.preview}
-                  alt="Preview"
-                  className="w-20 h-20 object-cover mr-2"
-                />
-              )}
-              {media.type === "video" && (
-                <video
-                  src={media.preview}
-                  className="w-20 h-20 object-cover mr-2"
-                  controls
-                />
-              )}
-              <span className="flex-1">{media.file.name}</span>
-              <button
-                onClick={() => removeMedia(media)}
-                className="text-red-500"
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-        </div>
-
-        <div className="mb-4">
-          <h3 className="font-bold mb-2 text-black">Tags</h3>
-          {availableTags.map((tag) => (
-            <button
-              key={tag}
-              onClick={() => handleTagToggle(tag)}
-              className={`mr-2 mb-2 px-3 py-1 text-black rounded ${
-                selectedTags.includes(tag)
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200"
-              }`}
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4 text-center">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
             >
-              {tag}
-            </button>
-          ))}
-        </div>
+              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Title
+                  as="h3"
+                  className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4"
+                >
+                  Create Post
+                </Dialog.Title>
 
-        <div className="flex justify-end">
-          <button
-            onClick={handleSubmitPost}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Submit Post
-          </button>
-        </div>
-      </div>
+                <form onSubmit={handleSubmitPost}>
+                  {/* Post Content */}
+                  <div className="mb-6">
+                    <textarea
+                      value={postContent}
+                      onChange={(e) => setPostContent(e.target.value)}
+                      placeholder="What's on your mind?"
+                      rows="4"
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      required
+                    />
+                  </div>
 
-      {showCancelConfirmation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-60">
-          <div className="bg-white p-8 rounded-lg w-[400px] text-center">
-            <h2 className="text-xl font-bold mb-4">Discard Post?</h2>
-            <p className="mb-6">
-              Are you sure you want to discard this post? All changes will be
-              lost.
-            </p>
-            <div className="flex justify-center space-x-4">
-              <button
-                onClick={() => setShowCancelConfirmation(false)}
-                className="bg-gray-200 text-black px-4 py-2 rounded-md hover:bg-gray-300"
-              >
-                Keep Editing
-              </button>
-              <button
-                onClick={handleConfirmCancel}
-                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-              >
-                Discard
-              </button>
-            </div>
+                  {/* Media Upload */}
+                  <div className="mb-6">
+                    <input
+                      type="file"
+                      accept="image/*,video/*"
+                      onChange={handleMediaSelect}
+                      multiple
+                      className="hidden"
+                      id="media-upload"
+                    />
+                    <label
+                      htmlFor="media-upload"
+                      className="inline-block px-4 py-2 bg-purple-100 text-purple-700 rounded-lg cursor-pointer hover:bg-purple-200 dark:bg-purple-900 dark:text-purple-200"
+                    >
+                      Add Media
+                    </label>
+
+                    {/* Media Preview */}
+                    <div className="mt-4 grid grid-cols-2 gap-4">
+                      {selectedMedia.map((media, index) => (
+                        <div key={index} className="relative">
+                          {media.type === "image" && (
+                            <img
+                              src={media.preview}
+                              alt="Preview"
+                              className="w-full h-32 object-cover rounded-lg"
+                            />
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleMediaRemove(index)}
+                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
+                          >
+                            <FaTimes />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Tags Input */}
+                  <div className="mb-6">
+                    <input
+                      type="text"
+                      placeholder="Add tags (press Enter)"
+                      onKeyDown={handleTagAdd}
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    />
+
+                    {/* Tags Display */}
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {selectedTags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full flex items-center space-x-1 dark:bg-purple-900 dark:text-purple-200"
+                        >
+                          <span>{tag}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleTagRemove(tag)}
+                            className="hover:text-purple-900 dark:hover:text-purple-100"
+                          >
+                            <FaTimes size={12} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !postContent.trim()}
+                    className={`w-full py-3 rounded-lg text-white font-semibold ${
+                      isSubmitting || !postContent.trim()
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-purple-600 hover:bg-purple-700"
+                    }`}
+                  >
+                    {isSubmitting ? "Posting..." : "Post"}
+                  </button>
+                </form>
+              </Dialog.Panel>
+            </Transition.Child>
           </div>
         </div>
-      )}
-    </div>
+      </Dialog>
+    </Transition>
   );
-};
-
-export default ModalContent;
+}
