@@ -10,6 +10,8 @@ import { auth } from "@/lib/firebase";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const SignIn = () => {
   const {
@@ -52,6 +54,7 @@ const SignIn = () => {
       router.push("/home");
     } catch (error) {
       console.error("Sign in error:", error);
+      setError(error.message);
     }
   };
 
@@ -62,6 +65,7 @@ const SignIn = () => {
     } catch (error) {
       if (error.code !== "auth/cancelled-popup-request") {
         console.error("Google sign in error:", error);
+        setError(error.message);
       }
     }
   };

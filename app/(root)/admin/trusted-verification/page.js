@@ -16,7 +16,7 @@ export default function TrustedVerificationPage() {
   useEffect(() => {
     const checkAdminStatus = async () => {
       if (!user) {
-        router.push("/auth/signin");
+        router.push("/sign-in");
         return;
       }
 

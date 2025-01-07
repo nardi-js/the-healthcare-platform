@@ -49,6 +49,58 @@ const ProfilePage = () => {
     }
   }, [user, authLoading, router]);
 
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Get user profile from Firestore
+        const userDoc = doc(db, "users", user.uid);
+        const userSnapshot = await getDoc(userDoc);
+
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.data();
+          setProfileData(prev => ({
+            ...prev,
+            basic: {
+              displayName: userData.displayName || user.displayName || "Anonymous",
+              email: userData.email || user.email,
+              photoURL: userData.photoURL || user.photoURL || "/download.png",
+              createdAt: userData.createdAt?.toDate() || new Date(),
+            }
+          }));
+        } else {
+          // Initialize profile if it doesn't exist
+          const newUserData = {
+            displayName: user.displayName || user.email.split('@')[0],
+            email: user.email,
+            photoURL: user.photoURL || "/download.png",
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          };
+          await setDoc(userDoc, newUserData);
+          setProfileData(prev => ({
+            ...prev,
+            basic: {
+              ...newUserData,
+              createdAt: new Date(),
+            }
+          }));
+        }
+      } catch (err) {
+        console.error("Error fetching user profile:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
+
   // Fetch user activity data
   useEffect(() => {
     const fetchUserActivity = async () => {
@@ -108,7 +160,7 @@ const ProfilePage = () => {
             content: "Welcome to my healthcare journey! This is my first post on the platform.",
             authorId: user.uid,
             authorName: user.displayName || "Anonymous",
-            authorAvatar: user.photoURL || "/default-avatar.png",
+            authorAvatar: user.photoURL || "/download.png",
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
             upvotes: 0,
@@ -149,7 +201,7 @@ const ProfilePage = () => {
             author: {
               uid: user.uid,
               displayName: user.displayName || "Anonymous",
-              photoURL: user.photoURL || "/default-avatar.png"
+              photoURL: user.photoURL || "/download.png"
             },
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),

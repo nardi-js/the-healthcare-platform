@@ -11,7 +11,7 @@ export default function TrustedApplicationPage() {
 
   useEffect(() => {
     if (!user) {
-      router.push("/auth/signin");
+      router.push("/sign-in");
     }
   }, [user, router]);
 
