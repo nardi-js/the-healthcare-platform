@@ -128,14 +128,18 @@ const AskQuestionModal = ({ isOpen, onClose, onQuestionSubmitted }) => {
       attachments: attachedFiles.map((file) => file.name),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
+      authorId: user.uid,
       author: {
         id: user.uid,
         name: user.displayName || "Anonymous",
         photoURL: user.photoURL || "/download.png"
       },
       status: "open",
-      viewCount: 0,
+      views: 0,
       answerCount: 0,
+      upvotes: 0,
+      downvotes: 0,
+      comments: []
     };
 
     try {

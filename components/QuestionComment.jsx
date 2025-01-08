@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { FaUser, FaReply, FaTrash, FaEdit } from 'react-icons/fa';
@@ -12,7 +12,9 @@ const QuestionComment = ({ questionId, comments = [], onCommentUpdate }) => {
   const [newComment, setNewComment] = useState('');
   const [replyTo, setReplyTo] = useState(null);
   const [editingComment, setEditingComment] = useState(null);
+  const [editText, setEditText] = useState('');
   const { user } = useAuth();
+  const editInputRef = useRef(null);
 
   const handleSubmitComment = async (e) => {
     e.preventDefault();
@@ -67,16 +69,27 @@ const QuestionComment = ({ questionId, comments = [], onCommentUpdate }) => {
     }
   };
 
-  const handleEditComment = async (commentId, newText) => {
-    if (!user || !newText.trim()) return;
+  const startEditing = (comment) => {
+    setEditingComment(comment.id);
+    setEditText(comment.text);
+    // Focus the input after a brief delay to ensure it's mounted
+    setTimeout(() => {
+      if (editInputRef.current) {
+        editInputRef.current.focus();
+      }
+    }, 100);
+  };
+
+  const handleEditComment = async (commentId) => {
+    if (!user || !editText.trim()) return;
 
     const commentToEdit = comments.find(c => c.id === commentId);
     if (!commentToEdit || commentToEdit.author.uid !== user.uid) return;
 
     const updatedComment = {
       ...commentToEdit,
-      text: newText.trim(),
-      editedAt: new Date().toISOString() 
+      text: editText.trim(),
+      editedAt: new Date().toISOString()
     };
 
     try {
@@ -90,6 +103,7 @@ const QuestionComment = ({ questionId, comments = [], onCommentUpdate }) => {
         lastEditAt: serverTimestamp()
       });
       setEditingComment(null);
+      setEditText('');
       if (onCommentUpdate) onCommentUpdate();
     } catch (error) {
       console.error('Error editing comment:', error);
@@ -99,11 +113,7 @@ const QuestionComment = ({ questionId, comments = [], onCommentUpdate }) => {
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
     try {
-      const date = typeof timestamp === 'string' 
-        ? new Date(timestamp)
-        : timestamp?.toDate?.() || new Date(timestamp);
-      
-      return formatDistanceToNow(date, { addSuffix: true });
+      return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
     } catch (error) {
       console.error('Error formatting date:', error);
       return '';
@@ -111,129 +121,130 @@ const QuestionComment = ({ questionId, comments = [], onCommentUpdate }) => {
   };
 
   return (
-    <div className="mt-8">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        Comments ({comments.length})
-      </h3>
-
+    <div className="space-y-4">
       {/* Comment Form */}
-      {user && (
-        <form onSubmit={handleSubmitComment} className="mb-6">
-          <div className="flex items-start space-x-4">
-            <div className="min-w-0 flex-1">
-              <textarea
-                rows="3"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-purple-600 dark:bg-gray-800 sm:text-sm sm:leading-6"
-                placeholder="Add a comment..."
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={!newComment.trim()}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Comment
-            </button>
-          </div>
+      <form onSubmit={handleSubmitComment} className="space-y-2">
+        <textarea
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder="Write a comment..."
+          className="w-full p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
+          rows="3"
+        />
+        <div className="flex justify-end space-x-2">
           {replyTo && (
-            <div className="mt-2 text-sm text-gray-500">
-              Replying to comment
-              <button
-                onClick={() => setReplyTo(null)}
-                className="ml-2 text-purple-600 hover:text-purple-500"
-              >
-                Cancel
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setReplyTo(null)}
+              className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              Cancel Reply
+            </button>
           )}
-        </form>
-      )}
+          <button
+            type="submit"
+            disabled={!newComment.trim()}
+            className="px-4 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+          >
+            Post Comment
+          </button>
+        </div>
+      </form>
 
       {/* Comments List */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         {comments.map((comment) => (
           <motion.div
             key={comment.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`flex space-x-4 ${comment.replyTo ? 'ml-12' : ''}`}
+            className={`p-4 bg-white dark:bg-gray-800 rounded-lg shadow ${
+              comment.replyTo ? 'ml-8 border-l-4 border-gray-300 dark:border-gray-600' : ''
+            }`}
           >
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                <FaUser className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-              </div>
-            </div>
-            <div className="flex-grow">
+            <div className="flex items-start justify-between">
               <div className="flex items-center space-x-2">
-                <span className="font-medium text-gray-900 dark:text-white">
-                  {comment.author.displayName}
-                </span>
-                <span className="text-sm text-gray-500">
-                  {formatDate(comment.createdAt)}
-                </span>
-                {comment.editedAt && (
-                  <span className="text-xs text-gray-500">(edited)</span>
+                {comment.author.photoURL ? (
+                  <img
+                    src={comment.author.photoURL}
+                    alt={comment.author.displayName}
+                    className="w-8 h-8 rounded-full"
+                  />
+                ) : (
+                  <FaUser className="w-8 h-8 text-gray-400" />
                 )}
+                <div>
+                  <div className="font-medium dark:text-white">
+                    {comment.author.displayName}
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {formatDate(comment.createdAt)}
+                    {comment.editedAt && ' (edited)'}
+                  </div>
+                </div>
               </div>
               
+              {user?.uid === comment.author.uid && (
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => startEditing(comment)}
+                    className="text-gray-500 hover:text-blue-500 dark:text-gray-400"
+                  >
+                    <FaEdit />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteComment(comment.id)}
+                    className="text-gray-500 hover:text-red-500 dark:text-gray-400"
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-2">
               {editingComment === comment.id ? (
-                <div className="mt-2">
+                <div className="space-y-2">
                   <textarea
-                    defaultValue={comment.text}
-                    className="block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:bg-gray-800 sm:text-sm"
-                    rows="2"
+                    ref={editInputRef}
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                    rows="3"
                   />
-                  <div className="mt-2 flex space-x-2">
+                  <div className="flex justify-end space-x-2">
                     <button
-                      onClick={() => handleEditComment(comment.id, event.target.previousSibling.value)}
-                      className="text-sm text-purple-600 hover:text-purple-500"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => setEditingComment(null)}
-                      className="text-sm text-gray-500 hover:text-gray-400"
+                      onClick={() => {
+                        setEditingComment(null);
+                        setEditText('');
+                      }}
+                      className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400"
                     >
                       Cancel
+                    </button>
+                    <button
+                      onClick={() => handleEditComment(comment.id)}
+                      disabled={!editText.trim()}
+                      className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                    >
+                      Save
                     </button>
                   </div>
                 </div>
               ) : (
-                <p className="mt-1 text-gray-700 dark:text-gray-300">{comment.text}</p>
+                <p className="text-gray-800 dark:text-gray-200">{comment.text}</p>
               )}
-              
-              <div className="mt-2 flex items-center space-x-4">
-                {user && !comment.replyTo && (
-                  <button
-                    onClick={() => setReplyTo(comment.id)}
-                    className="flex items-center text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                  >
-                    <FaReply className="w-4 h-4 mr-1" />
-                    Reply
-                  </button>
-                )}
-                {user?.uid === comment.author.uid && (
-                  <>
-                    <button
-                      onClick={() => setEditingComment(comment.id)}
-                      className="flex items-center text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                    >
-                      <FaEdit className="w-4 h-4 mr-1" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteComment(comment.id)}
-                      className="flex items-center text-sm text-red-500 hover:text-red-700"
-                    >
-                      <FaTrash className="w-4 h-4 mr-1" />
-                      Delete
-                    </button>
-                  </>
-                )}
-              </div>
             </div>
+
+            {!editingComment && (
+              <button
+                onClick={() => setReplyTo(comment.id)}
+                className="mt-2 text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 flex items-center space-x-1"
+              >
+                <FaReply />
+                <span>Reply</span>
+              </button>
+            )}
           </motion.div>
         ))}
       </div>

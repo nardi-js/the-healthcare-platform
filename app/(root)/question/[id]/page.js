@@ -4,13 +4,14 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
-import { FaEye, FaTags, FaUser, FaClock, FaUserClock } from "react-icons/fa";
+import { FaEye, FaTags, FaUser, FaClock, FaUserClock, FaComment } from "react-icons/fa";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import VoteSystem from "@/components/VoteSystem";
 import { useAuth } from "@/context/useAuth";
 import { recordQuestionView } from "@/lib/utils/questionViews";
 import QuestionComment from "@/components/QuestionComment";
+import Image from 'next/image';
 
 const QuestionDetail = () => {
   const params = useParams();
@@ -47,17 +48,28 @@ const QuestionDetail = () => {
         };
         setQuestion(questionData);
         setViewCount(questionData.views);
-        
-        // Record the view
-        await recordQuestionView(id, user?.uid);
-        // Update local view count
-        setViewCount(prev => prev + 1);
       }
       setLoading(false);
     } catch (error) {
       console.error("Error fetching question:", error);
       setLoading(false);
     }
+  }, [id]);
+
+  // Record view in a separate useEffect to avoid double counting
+  useEffect(() => {
+    let hasRecordedView = false;
+
+    const recordView = async () => {
+      if (!hasRecordedView && user?.uid && id) {
+        hasRecordedView = true;
+        await recordQuestionView(id, user.uid);
+        // Update local view count
+        setViewCount(prev => prev + 1);
+      }
+    };
+
+    recordView();
   }, [id, user?.uid]);
 
   useEffect(() => {
@@ -115,82 +127,91 @@ const QuestionDetail = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 mt-20">
+    <div className="max-w-4xl mx-auto p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
       >
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
-              <FaUser className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-            </div>
-            <div>
-              <h2 className="font-semibold text-gray-900 dark:text-white">
-                {question.author.displayName}
-              </h2>
-              <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                <FaClock className="w-3 h-3" />
-                <span>{formatDate(question.createdAt)}</span>
-              </div>
-            </div>
+        <div className="flex items-center space-x-4 mb-6">
+          <div className="relative w-12 h-12">
+            <Image
+              src={question.author?.photoURL || "/download.png"}
+              alt={question.author?.name || "Anonymous"}
+              width={48}
+              height={48}
+              className="rounded-full"
+            />
           </div>
-          <div className="flex items-center space-x-4">
-            <div className="flex flex-col items-end text-sm text-gray-500 dark:text-gray-400">
-              <div className="flex items-center space-x-1">
-                <FaEye className="w-4 h-4" />
-                <span>{viewCount}</span>
-              </div>
-              {question.uniqueViewers?.length > 0 && (
-                <div className="text-xs">
-                  {question.uniqueViewers.length} unique viewer{question.uniqueViewers.length !== 1 ? 's' : ''}
-                </div>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              {question.author?.name || "Anonymous"}
+              {question.author?.isTrusted && (
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                  Trusted
+                </span>
               )}
-            </div>
-            {question.lastViewed && (
-              <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
-                <FaUserClock className="w-4 h-4" />
-                <span>Last viewed {formatDate(question.lastViewed)}</span>
-              </div>
-            )}
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {formatDate(question.createdAt)}
+            </p>
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-          {question.title}
-        </h1>
-
-        <div className="prose dark:prose-invert max-w-none mb-6">
-          <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-            {question.details}
-          </p>
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            {question.title}
+          </h1>
+          <div className="prose dark:prose-invert max-w-none">
+            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+              {question.description}
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
           {question.tags?.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200"
+              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200"
             >
-              <FaTags className="w-3 h-3 mr-1" />
               {tag}
             </span>
           ))}
           {question.category && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
               {question.category}
             </span>
           )}
         </div>
 
-        <div className="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
-          <VoteSystem
-            initialUpvotes={question.upvotes || 0}
-            initialDownvotes={question.downvotes || 0}
-            questionId={question.id}
-          />
+        <div className="flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400 mb-6">
+          <div className="flex items-center space-x-2">
+            <FaEye className="w-5 h-5" />
+            <span>{viewCount} views</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <FaComment className="w-5 h-5" />
+            <span>{question.answers?.length || 0} answers</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <FaClock className="w-5 h-5" />
+            <span>Asked {formatDate(question.createdAt)}</span>
+          </div>
+          {question.updatedAt && question.updatedAt !== question.createdAt && (
+            <div className="flex items-center space-x-2">
+              <FaUserClock className="w-5 h-5" />
+              <span>Updated {formatDate(question.updatedAt)}</span>
+            </div>
+          )}
         </div>
+
+        <VoteSystem
+          itemId={id}
+          itemType="questions"
+          initialUpvotes={question.upvotes}
+          initialDownvotes={question.downvotes}
+        />
 
         {/* Comments Section */}
         <QuestionComment 

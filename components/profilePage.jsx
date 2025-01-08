@@ -272,6 +272,81 @@ const ProfilePage = () => {
     }
   };
 
+  const renderContent = () => {
+    if (loading) {
+      return <div className="text-center py-8">Loading...</div>;
+    }
+
+    if (error) {
+      return <div className="text-center py-8 text-red-500">{error}</div>;
+    }
+
+    switch (activeTab) {
+      case "posts":
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-6">
+              {posts.map((post) => (
+                <Link href={`/post/${post.id}`} key={post.id}>
+                  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm hover:shadow-md transition-all">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      {post.title}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300 line-clamp-2">
+                      {post.content}
+                    </p>
+                    <div className="mt-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center space-x-4">
+                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                        <span>• {post.views || 0} views</span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            {posts.length === 0 && (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                No posts yet
+              </div>
+            )}
+          </div>
+        );
+
+      case "questions":
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-6">
+              {questions.map((question) => (
+                <Link href={`/question/${question.id}`} key={question.id}>
+                  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm hover:shadow-md transition-all">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      {question.title}
+                    </h3>
+                    <div className="mt-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center space-x-4">
+                        <span>{new Date(question.createdAt).toLocaleDateString()}</span>
+                        <span>• {question.views || 0} views</span>
+                        <span>• {question.answers?.length || 0} answers</span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            {questions.length === 0 && (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                No questions yet
+              </div>
+            )}
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -329,100 +404,118 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              Posts
+        {/* Profile Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Statistics
             </h3>
-            <p className="text-3xl font-bold text-purple-600">
-              {profileData.stats.totalPosts}
-            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center p-4 bg-purple-50 dark:bg-gray-700 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  {profileData.stats.totalPosts}
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Posts</div>
+              </div>
+              <div className="text-center p-4 bg-blue-50 dark:bg-gray-700 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {profileData.stats.totalQuestions}
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Questions</div>
+              </div>
+            </div>
           </div>
-          <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              Questions
+
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Account Info
             </h3>
-            <p className="text-3xl font-bold text-purple-600">
-              {profileData.stats.totalQuestions}
-            </p>
+            <div className="space-y-2">
+              <p className="text-gray-600 dark:text-gray-300">
+                Member since: {new Date(profileData.basic?.createdAt).toLocaleDateString()}
+              </p>
+              <p className="text-gray-600 dark:text-gray-300">
+                Email: {profileData.basic?.email}
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+        {/* Recent Activity */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Recent Posts */}
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Recent Posts
             </h3>
-            {loading ? (
-              <div className="animate-pulse space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="bg-gray-200 dark:bg-gray-700 h-24 rounded-lg"
-                  ></div>
-                ))}
-              </div>
-            ) : posts.length > 0 ? (
-              <div className="space-y-4">
-                {posts.map((post) => (
-                  <div
-                    key={post.id}
-                    className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow hover:shadow-md transition-shadow"
-                  >
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                      {post.title}
-                    </h4>
-                    <p className="text-gray-600 dark:text-gray-300 line-clamp-2">
-                      {post.content}
-                    </p>
-                    <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(post.createdAt).toLocaleDateString()}
+            <div className="space-y-4">
+              {loading ? (
+                <div className="animate-pulse space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-20 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+                  ))}
+                </div>
+              ) : posts.length > 0 ? (
+                posts.slice(0, 3).map((post) => (
+                  <Link href={`/post/${post.id}`} key={post.id}>
+                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:shadow-md transition-shadow">
+                      <h4 className="font-medium text-gray-900 dark:text-white line-clamp-1">
+                        {post.title}
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mt-1">
+                        {post.content}
+                      </p>
+                      <div className="mt-2 flex items-center text-xs text-gray-500 dark:text-gray-400">
+                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                        <span className="mx-2">•</span>
+                        <span>{post.views || 0} views</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-600 dark:text-gray-400">No posts yet</p>
-            )}
+                  </Link>
+                ))
+              ) : (
+                <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                  No posts yet
+                </p>
+              )}
+            </div>
           </div>
 
-          <div>
-            <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+          {/* Recent Questions */}
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Recent Questions
             </h3>
-            {loading ? (
-              <div className="animate-pulse space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="bg-gray-200 dark:bg-gray-700 h-24 rounded-lg"
-                  ></div>
-                ))}
-              </div>
-            ) : questions.length > 0 ? (
-              <div className="space-y-4">
-                {questions.map((question) => (
-                  <div
-                    key={question.id}
-                    className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow hover:shadow-md transition-shadow"
-                  >
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                      {question.title}
-                    </h4>
-                    <p className="text-gray-600 dark:text-gray-300 line-clamp-2">
-                      {question.content}
-                    </p>
-                    <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(question.createdAt).toLocaleDateString()}
+            <div className="space-y-4">
+              {loading ? (
+                <div className="animate-pulse space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-20 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+                  ))}
+                </div>
+              ) : questions.length > 0 ? (
+                questions.slice(0, 3).map((question) => (
+                  <Link href={`/question/${question.id}`} key={question.id}>
+                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:shadow-md transition-shadow">
+                      <h4 className="font-medium text-gray-900 dark:text-white line-clamp-1">
+                        {question.title}
+                      </h4>
+                      <div className="mt-2 flex items-center text-xs text-gray-500 dark:text-gray-400">
+                        <span>{new Date(question.createdAt).toLocaleDateString()}</span>
+                        <span className="mx-2">•</span>
+                        <span>{question.views || 0} views</span>
+                        <span className="mx-2">•</span>
+                        <span>{question.answers?.length || 0} answers</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-600 dark:text-gray-400">
-                No questions yet
-              </p>
-            )}
+                  </Link>
+                ))
+              ) : (
+                <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                  No questions yet
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>

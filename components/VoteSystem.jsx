@@ -6,21 +6,12 @@ import { doc, getDoc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/useAuth";
 
-const VoteSystem = ({
-  initialUpvotes = 0,
-  initialDownvotes = 0,
-  postId,
-  questionId,
-}) => {
+const VoteSystem = ({ itemId, itemType, initialUpvotes = 0, initialDownvotes = 0 }) => {
   const { user } = useAuth();
   const [upvotes, setUpvotes] = useState(initialUpvotes);
   const [downvotes, setDownvotes] = useState(initialDownvotes);
   const [userVote, setUserVote] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  // Determine if this is for a post or question
-  const itemId = postId || questionId;
-  const itemType = postId ? "posts" : "questions";
 
   // Fetch user's existing vote on component mount
   useEffect(() => {
@@ -49,7 +40,7 @@ const VoteSystem = ({
       return;
     }
 
-    if (!itemId) {
+    if (!itemId || !itemType) {
       toast.error("Invalid item. Cannot vote at this time.");
       return;
     }
@@ -69,9 +60,10 @@ const VoteSystem = ({
       if (voteType === currentVote) {
         // Remove vote if clicking the same button
         await deleteDoc(voteRef);
-        await updateDoc(itemRef, {
-          [voteType]: upvotes - 1
-        });
+        const updates = {};
+        updates[voteType] = voteType === "upvotes" ? upvotes - 1 : downvotes - 1;
+        await updateDoc(itemRef, updates);
+        
         setUserVote(null);
         if (voteType === "upvotes") {
           setUpvotes(prev => prev - 1);
@@ -91,73 +83,62 @@ const VoteSystem = ({
         // Update item vote counts
         const updates = {};
         if (currentVote) {
+          // Remove previous vote
           updates[currentVote] = currentVote === "upvotes" ? upvotes - 1 : downvotes - 1;
         }
+        // Add new vote
         updates[voteType] = voteType === "upvotes" ? upvotes + 1 : downvotes + 1;
+        
         await updateDoc(itemRef, updates);
 
-        // Update local state
-        if (currentVote === "upvotes") {
-          setUpvotes(prev => prev - 1);
-        } else if (currentVote === "downvotes") {
-          setDownvotes(prev => prev - 1);
-        }
-
+        setUserVote(voteType);
         if (voteType === "upvotes") {
           setUpvotes(prev => prev + 1);
+          if (currentVote === "downvotes") {
+            setDownvotes(prev => prev - 1);
+          }
         } else {
           setDownvotes(prev => prev + 1);
+          if (currentVote === "upvotes") {
+            setUpvotes(prev => prev - 1);
+          }
         }
-
-        setUserVote(voteType);
       }
-
-      toast.success("Vote recorded successfully!");
     } catch (error) {
-      console.error("Vote submission failed", error);
-      toast.error("Failed to submit vote. Please try again.");
-      
-      // Rollback changes on error
-      if (voteType === "upvotes") {
-        setUpvotes(prev => prev - 1);
-      } else if (voteType === "downvotes") {
-        setDownvotes(prev => prev - 1);
-      }
-      setUserVote(null);
+      console.error("Error voting:", error);
+      toast.error("Failed to vote. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="vote-system flex flex-col items-start space-y-4">
-      <div className="flex items-center space-x-4">
-        {/* Upvote Button */}
-        <button
-          onClick={() => handleVote("upvotes")}
-          disabled={loading || !itemId}
-          className={`flex items-center ${
-            userVote === "upvotes" ? "text-green-500" : "text-gray-500"
-          } ${(loading || !itemId) ? "opacity-50 cursor-not-allowed" : "hover:text-green-600"}`}
-          aria-label="Upvote"
-        >
-          <FaArrowUp className="w-5 h-5" />
-          <span className="ml-2">{upvotes}</span>
-        </button>
-
-        {/* Downvote Button */}
-        <button
-          onClick={() => handleVote("downvotes")}
-          disabled={loading || !itemId}
-          className={`flex items-center ${
-            userVote === "downvotes" ? "text-red-500" : "text-gray-500"
-          } ${(loading || !itemId) ? "opacity-50 cursor-not-allowed" : "hover:text-red-600"}`}
-          aria-label="Downvote"
-        >
-          <FaArrowDown className="w-5 h-5" />
-          <span className="ml-2">{downvotes}</span>
-        </button>
-      </div>
+    <div className="flex items-center space-x-4">
+      <button
+        onClick={() => handleVote("upvotes")}
+        disabled={loading}
+        className={`flex items-center space-x-1 px-3 py-1 rounded-full transition-colors ${
+          userVote === "upvotes"
+            ? "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400"
+            : "hover:bg-gray-100 dark:hover:bg-gray-700"
+        }`}
+      >
+        <FaArrowUp className={userVote === "upvotes" ? "text-green-600 dark:text-green-400" : ""} />
+        <span>{upvotes}</span>
+      </button>
+      
+      <button
+        onClick={() => handleVote("downvotes")}
+        disabled={loading}
+        className={`flex items-center space-x-1 px-3 py-1 rounded-full transition-colors ${
+          userVote === "downvotes"
+            ? "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400"
+            : "hover:bg-gray-100 dark:hover:bg-gray-700"
+        }`}
+      >
+        <FaArrowDown className={userVote === "downvotes" ? "text-red-600 dark:text-red-400" : ""} />
+        <span>{downvotes}</span>
+      </button>
     </div>
   );
 };
