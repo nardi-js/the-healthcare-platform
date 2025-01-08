@@ -152,89 +152,23 @@ const ProfilePage = () => {
         console.log("Posts found:", postsSnapshot.size);
         console.log("Questions found:", questionsSnapshot.size);
 
-        // Handle empty states and create test data if needed
-        if (postsSnapshot.empty) {
-          console.log("Creating test post...");
-          const testPost = {
-            title: "My First Healthcare Post",
-            content: "Welcome to my healthcare journey! This is my first post on the platform.",
-            authorId: user.uid,
-            authorName: user.displayName || "Anonymous",
-            authorAvatar: user.photoURL || "/download.png",
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-            upvotes: 0,
-            downvotes: 0,
-            tags: ["introduction", "healthcare"],
-            category: "General"
-          };
+        // Set posts
+        setPosts(
+          postsSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            createdAt: doc.data().createdAt?.toDate() || new Date(),
+          }))
+        );
 
-          const newPostRef = await addDoc(collection(db, "posts"), testPost);
-          console.log("Test post created:", newPostRef.id);
-          
-          // Fetch updated posts
-          const updatedPostsSnapshot = await fetchWithRetry(postsQuery);
-          setPosts(
-            updatedPostsSnapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data(),
-              createdAt: doc.data().createdAt?.toDate() || new Date(),
-            }))
-          );
-        } else {
-          setPosts(
-            postsSnapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data(),
-              createdAt: doc.data().createdAt?.toDate() || new Date(),
-            }))
-          );
-        }
-
-        // Handle questions similarly
-        if (questionsSnapshot.empty) {
-          console.log("Creating test question...");
-          const testQuestion = {
-            title: "My First Healthcare Question",
-            details: "I'm new to the platform and would like to understand its features better. Can someone help?",
-            authorId: user.uid,
-            author: {
-              uid: user.uid,
-              displayName: user.displayName || "Anonymous",
-              photoURL: user.photoURL || "/download.png"
-            },
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-            upvotes: 0,
-            downvotes: 0,
-            tags: ["getting-started", "help"],
-            category: "Support",
-            status: "open",
-            answers: [],
-            views: 0
-          };
-
-          const newQuestionRef = await addDoc(collection(db, "questions"), testQuestion);
-          console.log("Test question created:", newQuestionRef.id);
-          
-          // Fetch updated questions
-          const updatedQuestionsSnapshot = await fetchWithRetry(questionsQuery);
-          setQuestions(
-            updatedQuestionsSnapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data(),
-              createdAt: doc.data().createdAt?.toDate() || new Date(),
-            }))
-          );
-        } else {
-          setQuestions(
-            questionsSnapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data(),
-              createdAt: doc.data().createdAt?.toDate() || new Date(),
-            }))
-          );
-        }
+        // Set questions
+        setQuestions(
+          questionsSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            createdAt: doc.data().createdAt?.toDate() || new Date(),
+          }))
+        );
 
         // Update stats
         setProfileData(prev => ({

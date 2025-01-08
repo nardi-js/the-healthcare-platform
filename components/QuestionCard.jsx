@@ -79,16 +79,23 @@ const QuestionCard = ({ question }) => {
         </div>
 
         <div className="mt-4 flex items-center justify-between text-sm">
-          <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
-              <FaUser className="w-3 h-3 text-gray-500 dark:text-gray-400" />
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-purple-600 text-white">
+              {author?.displayName?.[0] || "A"}
             </div>
-            <span className="text-gray-600 dark:text-gray-300">
-              {author?.displayName || "Anonymous"}
-            </span>
-            <span className="text-gray-400 dark:text-gray-500">
-              {formatDate(createdAt)}
-            </span>
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                {author?.displayName || "Anonymous"}
+                {author?.isTrusted && (
+                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                    Trusted
+                  </span>
+                )}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {formatDate(createdAt)}
+              </p>
+            </div>
           </div>
         </div>
       </Link>

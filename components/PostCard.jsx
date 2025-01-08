@@ -25,7 +25,7 @@ export default function PostCard({ post }) {
         </div>
         <div>
           <p className="text-sm font-medium text-gray-900 dark:text-white">
-            {post.author?.name || "Anonymous"}
+            {post.author?.name ? post.author.name : "Anonymous"}
             {post.author?.isTrusted && (
               <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                 Trusted
