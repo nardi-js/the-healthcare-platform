@@ -13,6 +13,7 @@ import {
   FaQuestion,
   FaComments,
   FaUserShield,
+  FaInfoCircle,
 } from "react-icons/fa";
 
 const Sidebar = () => {
@@ -22,7 +23,7 @@ const Sidebar = () => {
 
   const mainLinks = [
     { name: "Home", href: "/home", icon: FaHome },
-    { name: "Dashboard", href: "/dashboard", icon: FaChartBar },
+    { name: "About Us", href: "/about-us", icon: FaInfoCircle },
   ];
 
   const communityLinks = [
