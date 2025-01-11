@@ -221,7 +221,11 @@ export default function PostsPage() {
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className={`flex items-center px-4 py-2 rounded-lg border transition-colors ${
+              showFilters
+                ? "bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-900 dark:text-purple-300"
+                : "bg-white text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700"
+            }`}
           >
             <FaFilter className="mr-2" />
             Filters
@@ -247,13 +251,13 @@ export default function PostsPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Categories */}
                 <div>
-                  <h3 className="font-semibold mb-3 flex items-center">
+                  <h3 className="font-semibold mb-3 flex items-center text-gray-900 dark:text-white">
                     <FaTags className="mr-2" />
                     Categories
                   </h3>
                   <div className="space-y-2">
                     {categories.map((category) => (
-                      <label key={category.id} className="flex items-center">
+                      <label key={category.id} className="flex items-center text-gray-700 dark:text-gray-200">
                         <input
                           type="checkbox"
                           checked={selectedCategories.includes(category.id)}
@@ -264,7 +268,7 @@ export default function PostsPage() {
                               setSelectedCategories(selectedCategories.filter(id => id !== category.id));
                             }
                           }}
-                          className="mr-2"
+                          className="mr-2 accent-purple-600"
                         />
                         {category.label}
                       </label>
@@ -274,19 +278,19 @@ export default function PostsPage() {
 
                 {/* Sort Options */}
                 <div>
-                  <h3 className="font-semibold mb-3 flex items-center">
+                  <h3 className="font-semibold mb-3 flex items-center text-gray-900 dark:text-white">
                     <FaSort className="mr-2" />
                     Sort By
                   </h3>
                   <div className="space-y-2">
                     {sortOptions.map((option) => (
-                      <label key={option.id} className="flex items-center">
+                      <label key={option.id} className="flex items-center text-gray-700 dark:text-gray-200">
                         <input
                           type="radio"
                           name="sort"
                           checked={selectedSort === option.id}
                           onChange={() => setSelectedSort(option.id)}
-                          className="mr-2"
+                          className="mr-2 accent-purple-600"
                         />
                         {option.label}
                       </label>
@@ -296,19 +300,19 @@ export default function PostsPage() {
 
                 {/* Date Range */}
                 <div>
-                  <h3 className="font-semibold mb-3 flex items-center">
+                  <h3 className="font-semibold mb-3 flex items-center text-gray-900 dark:text-white">
                     <FaCalendar className="mr-2" />
                     Time Period
                   </h3>
                   <div className="space-y-2">
                     {dateRanges.map((range) => (
-                      <label key={range.id} className="flex items-center">
+                      <label key={range.id} className="flex items-center text-gray-700 dark:text-gray-200">
                         <input
                           type="radio"
                           name="dateRange"
                           checked={selectedDateRange === range.id}
                           onChange={() => setSelectedDateRange(range.id)}
-                          className="mr-2"
+                          className="mr-2 accent-purple-600"
                         />
                         {range.label}
                       </label>

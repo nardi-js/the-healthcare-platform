@@ -1,353 +1,335 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import AskQuestionModal from "@/components/AskQuestionModal";
-import QuestionCard from "@/components/QuestionCard";
-import AnswerModal from "@/components/AnswerModal";
-import { useAuth } from "@/context/useAuth";
-import { Geist } from "next/font/google";
-import {
-  FaQuestion,
-  FaCommentAlt,
-  FaSearch,
-  FaFilter,
-  FaSort,
-  FaTags,
-  FaPlus,
-  FaSpinner,
-  FaTimes,
-} from "react-icons/fa";
-import Image from "next/image";
 import { db } from "@/lib/firebase";
-import {
-  collection,
-  query,
-  orderBy,
-  where,
-  getDocs,
-  limit,
-} from "firebase/firestore";
-
-const geist = Geist({ subsets: ["latin"] });
+import { collection, query, orderBy, limit, getDocs, startAfter } from "firebase/firestore";
+import Question from "@/components/Question";
+import AskQuestionModal from "@/components/AskQuestionModal";
+import { FaPlus, FaSearch, FaFilter, FaTags, FaSort, FaCalendar } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import { Geist } from "next/font/google";
 
 const categories = [
-  "All",
-  "General Medicine",
-  "Mental Health",
-  "Pediatrics",
-  "Surgery",
-  "Emergency Care",
-  "Chronic Conditions",
-  "Preventive Care",
+  { id: "all", label: "All" },
+  { id: "General Medicine", label: "General Medicine" },
+  { id: "Mental Health", label: "Mental Health" },
+  { id: "Pediatrics", label: "Pediatrics" },
+  { id: "Emergency care", label: "Emergency Care" },
+  { id: "Chronic Condition", label: "Chronic Condition" },
+  { id: "Preventive Care", label: "Preventive Care" },
 ];
 
 const sortOptions = [
-  { label: "Most Recent", value: "recent" },
-  { label: "Most Answered", value: "answers" },
-  { label: "Most Viewed", value: "views" },
-  { label: "Unanswered", value: "unanswered" },
+  { id: "recent", label: "Most Recent" },
+  { id: "answered", label: "Most Answered" },
+  { id: "viewed", label: "Most Viewed" },
+  { id: "liked", label: "Most Liked" },
+  { id: "unanswered", label: "Unanswered" },
 ];
 
-export default function QuestionsPage() {
-  const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("questions");
-  const [isAnswerModalOpen, setIsAnswerModalOpen] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState(null);
-  const [questions, setQuestions] = useState([]);
-  const [answers, setAnswers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [sortBy, setSortBy] = useState("latest");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [isAskModalOpen, setIsAskModalOpen] = useState(false);
+const dateRanges = [
+  { id: "all", label: "All Time" },
+  { id: "today", label: "Today" },
+  { id: "week", label: "This Week" },
+  { id: "month", label: "This Month" },
+  { id: "year", label: "This Year" },
+];
 
-  const onAskClick = () => {
-    setIsAskModalOpen(true);
+const geist = Geist({ subsets: ["latin"] });
+
+export default function QuestionsPage() {
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedSort, setSelectedSort] = useState("recent");
+  const [selectedDateRange, setSelectedDateRange] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [lastVisible, setLastVisible] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+
+  const fetchQuestions = async (isLoadMore = false) => {
+    try {
+      setLoading(true);
+      let questionsQuery = collection(db, "questions");
+
+      // Only sort by createdAt
+      questionsQuery = query(questionsQuery, orderBy("createdAt", "desc"), limit(20));
+
+      // Add startAfter if loading more
+      if (isLoadMore && lastVisible) {
+        questionsQuery = query(questionsQuery, startAfter(lastVisible));
+      }
+
+      const querySnapshot = await getDocs(questionsQuery);
+      setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
+      setHasMore(querySnapshot.docs.length === 20);
+
+      let fetchedQuestions = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate() || new Date(),
+        likes: doc.data().likes || 0,
+        dislikes: doc.data().dislikes || 0
+      }));
+
+      // Apply category filtering
+      if (selectedCategories.length > 0 && !selectedCategories.includes("all")) {
+        fetchedQuestions = fetchedQuestions.filter(question =>
+          selectedCategories.includes(question.category)
+        );
+      }
+
+      // Date range filter
+      if (selectedDateRange !== "all") {
+        const now = new Date();
+        const cutoffDate = new Date();
+        
+        switch (selectedDateRange) {
+          case "today":
+            cutoffDate.setHours(0, 0, 0, 0);
+            break;
+          case "week":
+            cutoffDate.setDate(now.getDate() - 7);
+            break;
+          case "month":
+            cutoffDate.setMonth(now.getMonth() - 1);
+            break;
+          case "year":
+            cutoffDate.setFullYear(now.getFullYear() - 1);
+            break;
+        }
+        
+        fetchedQuestions = fetchedQuestions.filter(question => 
+          question.createdAt >= cutoffDate
+        );
+      }
+
+      // Apply sorting
+      switch (selectedSort) {
+        case "answered":
+          fetchedQuestions.sort((a, b) => (b.answerCount || 0) - (a.answerCount || 0));
+          break;
+        case "viewed":
+          fetchedQuestions.sort((a, b) => (b.views || 0) - (a.views || 0));
+          break;
+        case "liked":
+          fetchedQuestions.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+          break;
+        case "unanswered":
+          fetchedQuestions = fetchedQuestions.filter(question => !question.answerCount || question.answerCount === 0);
+          break;
+      }
+
+      // Search filter
+      if (searchQuery) {
+        const searchTerms = searchQuery.toLowerCase().split(" ");
+        fetchedQuestions = fetchedQuestions.filter(question =>
+          searchTerms.every(term =>
+            question.title?.toLowerCase().includes(term) ||
+            question.content?.toLowerCase().includes(term) ||
+            question.category?.toLowerCase().includes(term)
+          )
+        );
+      }
+
+      if (isLoadMore) {
+        setQuestions(prev => [...prev, ...fetchedQuestions]);
+      } else {
+        setQuestions(fetchedQuestions);
+      }
+    } catch (error) {
+      console.error("Error fetching questions:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        setLoading(true);
-        let questionsQuery = query(collection(db, "questions"));
-
-        // Apply filters
-        if (selectedCategory !== "All") {
-          questionsQuery = query(questionsQuery, where("category", "==", selectedCategory));
-        }
-
-        // Apply sorting
-        switch (sortBy) {
-          case "answers":
-            questionsQuery = query(questionsQuery, orderBy("answerCount", "desc"));
-            break;
-          case "views":
-            questionsQuery = query(questionsQuery, orderBy("viewCount", "desc"));
-            break;
-          case "unanswered":
-            questionsQuery = query(questionsQuery, where("answerCount", "==", 0));
-            break;
-          default:
-            questionsQuery = query(questionsQuery, orderBy("createdAt", "desc"));
-        }
-
-        questionsQuery = query(questionsQuery, limit(20));
-        const snapshot = await getDocs(questionsQuery);
-
-        let fetchedQuestions = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          timestamp: doc.data().createdAt?.toDate() || new Date(),
-        }));
-
-        // Apply search filter if query exists
-        if (searchQuery) {
-          fetchedQuestions = fetchedQuestions.filter((question) =>
-            question.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            question.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            question.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-          );
-        }
-
-        setQuestions(fetchedQuestions);
-      } catch (error) {
-        console.error("Error fetching questions:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchQuestions();
-  }, [selectedCategory, sortBy, searchQuery]);
-
-  const handleAnswer = (question) => {
-    setCurrentQuestion(question);
-    setIsAnswerModalOpen(true);
-  };
-
-  const handleAnswerSubmit = async (answerData) => {
-    // Implementation for submitting answer
-    setIsAnswerModalOpen(false);
-    setActiveTab("answers");
-  };
-
-  const handleQuestionSubmitted = async (questionId) => {
-    // Refresh questions list after new question is submitted
-    const fetchQuestions = async () => {
-      try {
-        setLoading(true);
-        let questionsQuery = query(collection(db, "questions"));
-
-        // Apply filters
-        if (selectedCategory !== "All") {
-          questionsQuery = query(questionsQuery, where("category", "==", selectedCategory));
-        }
-
-        // Apply sorting
-        switch (sortBy) {
-          case "answers":
-            questionsQuery = query(questionsQuery, orderBy("answerCount", "desc"));
-            break;
-          case "views":
-            questionsQuery = query(questionsQuery, orderBy("viewCount", "desc"));
-            break;
-          case "unanswered":
-            questionsQuery = query(questionsQuery, where("answerCount", "==", 0));
-            break;
-          default:
-            questionsQuery = query(questionsQuery, orderBy("createdAt", "desc"));
-        }
-
-        questionsQuery = query(questionsQuery, limit(20));
-        const snapshot = await getDocs(questionsQuery);
-
-        let fetchedQuestions = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          timestamp: doc.data().createdAt?.toDate() || new Date(),
-        }));
-
-        // Apply search filter if query exists
-        if (searchQuery) {
-          fetchedQuestions = fetchedQuestions.filter((question) =>
-            question.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            question.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            question.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-          );
-        }
-
-        setQuestions(fetchedQuestions);
-      } catch (error) {
-        console.error("Error fetching questions:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    await fetchQuestions();
-  };
+  }, [selectedCategories, selectedSort, selectedDateRange, searchQuery]);
 
   return (
-    <div className={`${geist.className} min-h-screen bg-gray-50 dark:bg-gray-900`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <div className="mt-6 space-y-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  placeholder="Search questions..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 dark:text-white"
-                />
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowFilters(!showFilters)}
-                className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                <FaFilter />
-              </motion.button>
-            </div>
-
-            <AnimatePresence>
-              {showFilters && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="space-y-4 overflow-hidden"
-                >
-                  {/* Categories */}
-                  <div className="flex flex-wrap gap-2">
-                    {categories.map((category) => (
-                      <motion.button
-                        key={category}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setSelectedCategory(category)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors
-                          ${
-                            selectedCategory === category
-                              ? "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300"
-                              : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                          }`}
-                      >
-                        {category}
-                      </motion.button>
-                    ))}
-                  </div>
-
-                  {/* Sort Options */}
-                  <div className="flex items-center space-x-4">
-                    <FaSort className="text-gray-400" />
-                    <div className="flex gap-4">
-                      {sortOptions.map((option) => (
-                        <button
-                          key={option.value}
-                          onClick={() => setSortBy(option.value)}
-                          className={`text-sm font-medium transition-colors
-                            ${
-                              sortBy === option.value
-                                ? "text-purple-600 dark:text-purple-300"
-                                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                            }`}
-                        >
-                          {option.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
+    <main className={`${geist.className} container mx-auto px-4 py-8`}>
+      {/* Header and Search */}
+      <div className="mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Questions</h1>
           <button
-            onClick={onAskClick}
-            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center gap-2"
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
           >
-            <FaPlus className="w-4 h-4" />
-            Ask a Question
+            <FaPlus className="mr-2" />
+            Ask Question
           </button>
         </div>
 
-        {/* Content Section */}
-        <main className="space-y-6">
-          {loading ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="animate-pulse bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
-                  <div className="space-y-2">
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            (activeTab === "questions" ? questions : answers).length > 0 ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <AnimatePresence>
-                  {(activeTab === "questions" ? questions : answers).map((item, index) => (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      {activeTab === "questions" ? (
-                        <QuestionCard
-                          question={item}
-                          onAnswer={handleAnswer}
-                        />
-                      ) : (
-                        <AnswerCard answer={item} />
-                      )}
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  No questions found
-                </h3>
-                <p className="mt-2 text-gray-600 dark:text-gray-400">
-                  {searchQuery 
-                    ? "Try adjusting your search query or filters"
-                    : "Be the first to ask a question!"}
-                </p>
-                <AskQuestionModal />
-              </div>
-            )
-          )}
-        </main>
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-grow relative">
+            <input
+              type="text"
+              placeholder="Search questions..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+            />
+            <FaSearch className="absolute left-3 top-3 text-gray-400" />
+          </div>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex items-center px-4 py-2 rounded-lg border transition-colors ${
+              showFilters
+                ? "bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-900 dark:text-purple-300"
+                : "bg-white text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700"
+            }`}
+          >
+            <FaFilter className="mr-2" />
+            Filters
+          </button>
+        </div>
       </div>
 
-      {/* Modals */}
+      {/* Filters Panel */}
       <AnimatePresence>
-        {isAskModalOpen && (
-          <AskQuestionModal 
-            isOpen={isAskModalOpen} 
-            onClose={() => setIsAskModalOpen(false)}
-            onQuestionSubmitted={handleQuestionSubmitted}
-          />
+        {showFilters && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="mb-8 overflow-hidden"
+          >
+            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Categories */}
+                <div>
+                  <h3 className="font-semibold mb-3 flex items-center text-gray-900 dark:text-white">
+                    <FaTags className="mr-2" />
+                    Categories
+                  </h3>
+                  <div className="space-y-2">
+                    {categories.map((category) => (
+                      <label key={category.id} className="flex items-center text-gray-700 dark:text-gray-200">
+                        <input
+                          type="checkbox"
+                          checked={selectedCategories.includes(category.id)}
+                          onChange={(e) => {
+                            if (category.id === "all") {
+                              setSelectedCategories(e.target.checked ? ["all"] : []);
+                            } else {
+                              setSelectedCategories(prev => {
+                                const newCategories = e.target.checked
+                                  ? [...prev.filter(id => id !== "all"), category.id]
+                                  : prev.filter(id => id !== category.id);
+                                return newCategories.length === 0 ? ["all"] : newCategories;
+                              });
+                            }
+                          }}
+                          className="mr-2 accent-purple-600"
+                        />
+                        {category.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sort Options */}
+                <div>
+                  <h3 className="font-semibold mb-3 flex items-center text-gray-900 dark:text-white">
+                    <FaSort className="mr-2" />
+                    Sort By
+                  </h3>
+                  <div className="space-y-2">
+                    {sortOptions.map((option) => (
+                      <label key={option.id} className="flex items-center text-gray-700 dark:text-gray-200">
+                        <input
+                          type="radio"
+                          name="sort"
+                          checked={selectedSort === option.id}
+                          onChange={() => setSelectedSort(option.id)}
+                          className="mr-2 accent-purple-600"
+                        />
+                        {option.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Date Range */}
+                <div>
+                  <h3 className="font-semibold mb-3 flex items-center text-gray-900 dark:text-white">
+                    <FaCalendar className="mr-2" />
+                    Time Period
+                  </h3>
+                  <div className="space-y-2">
+                    {dateRanges.map((range) => (
+                      <label key={range.id} className="flex items-center text-gray-700 dark:text-gray-200">
+                        <input
+                          type="radio"
+                          name="dateRange"
+                          checked={selectedDateRange === range.id}
+                          onChange={() => setSelectedDateRange(range.id)}
+                          className="mr-2 accent-purple-600"
+                        />
+                        {range.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Clear Filters */}
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => {
+                    setSelectedCategories(["all"]);
+                    setSelectedSort("recent");
+                    setSelectedDateRange("all");
+                    setSearchQuery("");
+                  }}
+                  className="text-sm text-red-600 hover:text-red-700 dark:text-red-400"
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
-      <AnswerModal
-        isOpen={isAnswerModalOpen}
-        onClose={() => setIsAnswerModalOpen(false)}
-        onSubmit={handleAnswerSubmit}
-        question={currentQuestion}
+
+      {/* Questions List */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {questions.map((question) => (
+          <Question key={question.id} {...question} />
+        ))}
+        {questions.length === 0 && !loading && (
+          <div className="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
+            No questions found
+          </div>
+        )}
+      </div>
+
+      {hasMore && (
+        <div className="text-center mt-6">
+          <button
+            onClick={() => fetchQuestions(true)}
+            disabled={loading}
+            className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+          >
+            {loading ? "Loading..." : "Load More"}
+          </button>
+        </div>
+      )}
+
+      {/* Ask Question Modal */}
+      <AskQuestionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => {
+          setIsModalOpen(false);
+          fetchQuestions();
+        }}
       />
-    </div>
+    </main>
   );
 }
