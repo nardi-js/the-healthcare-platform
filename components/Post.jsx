@@ -12,19 +12,16 @@ import ShareSystem from "./ShareSystem";
 const Post = ({
   id,
   author,
-  title,
-  timestamp,
   content,
   media = [],
   tags = [],
-  category,
-  status = 'published',
-  initialUpvotes = 0,
-  initialDownvotes = 0,
-  initialComments = [],
-  isProfileView = false, // New prop to handle profile view
-  onEdit, // New prop for editing
-  onDelete, // New prop for deleting
+  likes = 0,
+  views = 0,
+  commentCount = 0,
+  createdAt,
+  isProfileView = false,
+  onEdit,
+  onDelete,
 }) => {
   const { user } = useAuth();
   const [selectedMedia, setSelectedMedia] = useState(null);
@@ -85,8 +82,6 @@ const Post = ({
     return `${text.substring(0, maxLength)}...`;
   };
 
-  const postUrl = `https://yourplatform.com/posts/${id}`;
-
   return (
     <div className={`post-container bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 ${isProfileView ? 'border-l-4 border-purple-500' : ''}`}>
       {/* Post Header */}
@@ -102,12 +97,12 @@ const Post = ({
               {author.name}
             </h3>
             <p className="text-sm text-gray-500">
-              {new Date(timestamp).toLocaleString()}
+              {new Date(createdAt?.seconds * 1000).toLocaleString()}
             </p>
           </div>
         </div>
         
-        {isProfileView && (
+        {isProfileView && user?.uid === author.id && (
           <div className="flex space-x-2">
             <button
               onClick={() => onEdit(id)}
@@ -124,11 +119,6 @@ const Post = ({
           </div>
         )}
       </div>
-
-      {/* Post Title */}
-      <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-gray-100">
-        {title}
-      </h2>
 
       {/* Post Content */}
       <div className="mb-4">
@@ -156,11 +146,6 @@ const Post = ({
 
       {/* Tags and Category */}
       <div className="flex flex-wrap gap-2 mb-4">
-        {category && (
-          <span className="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full">
-            {category}
-          </span>
-        )}
         {tags.map((tag, index) => (
           <span
             key={index}
@@ -171,34 +156,17 @@ const Post = ({
         ))}
       </div>
 
-      {/* Status Badge (if in profile view) */}
-      {isProfileView && (
-        <div className="mb-4">
-          <span
-            className={`text-xs px-2 py-1 rounded-full ${
-              status === 'published'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-yellow-100 text-yellow-800'
-            }`}
-          >
-            {status.charAt(0).toUpperCase() + status.slice(1)}
-          </span>
-        </div>
-      )}
-
-      {/* Interaction Components */}
-      {!isProfileView && (
-        <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <VoteSystem
+      {/* Interaction Bar */}
+      <div className="mt-4 flex items-center justify-between border-t pt-4 dark:border-gray-700">
+        <div className="flex items-center space-x-4">
+          <VoteSystem postId={id} />
+          <CommentSystem
             postId={id}
-            userId={user?.uid}
-            initialUpvotes={initialUpvotes}
-            initialDownvotes={initialDownvotes}
+            commentCount={commentCount}
           />
-          <CommentSystem postId={id} initialComments={initialComments} />
-          <ShareSystem url={postUrl} />
         </div>
-      )}
+        <ShareSystem url={`${window.location.origin}/posts/${id}`} />
+      </div>
 
       {/* Media Preview Modal */}
       {selectedMedia && (
