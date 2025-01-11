@@ -1,11 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
-import { FaEye, FaComment, FaTags, FaUser } from "react-icons/fa";
+import { FaEye, FaComment, FaTags, FaUser, FaThumbsUp } from "react-icons/fa";
 import Image from "next/image";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const QuestionCard = ({ question }) => {
   const {
@@ -14,10 +16,30 @@ const QuestionCard = ({ question }) => {
     author,
     createdAt,
     tags = [],
-    views = 0,
-    answers = [],
     category,
   } = question;
+
+  const [questionData, setQuestionData] = useState({
+    views: question.views || 0,
+    upvotes: question.likes || 0,
+    commentCount: question.commentCount || 0
+  });
+
+  // Listen to real-time updates for the question
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, "questions", id), (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        setQuestionData({
+          views: data.views || 0,
+          upvotes: data.likes || 0,
+          commentCount: data.commentCount || 0
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, [id]);
 
   const formatDate = (timestamp) => {
     if (!timestamp) return "Just now";
@@ -43,7 +65,7 @@ const QuestionCard = ({ question }) => {
       animate={{ opacity: 1, y: 0 }}
       className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden border border-gray-200 dark:border-gray-700"
     >
-      <Link href={`/question/${id}`} className="block p-6">
+      <Link href={`/questions/${id}`} className="block p-6">
         {/* Author Info */}
         <div className="flex items-center space-x-3 mb-4">
           <div className="relative w-8 h-8">
@@ -72,8 +94,8 @@ const QuestionCard = ({ question }) => {
 
         {/* Question Content */}
         <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200 break-words line-clamp-2">
               {title}
             </h3>
             
@@ -97,11 +119,15 @@ const QuestionCard = ({ question }) => {
           <div className="flex flex-col items-end space-y-2 ml-4 text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center space-x-1">
               <FaEye className="w-4 h-4" />
-              <span>{views}</span>
+              <span>{questionData.views}</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <FaThumbsUp className="w-4 h-4" />
+              <span>{questionData.upvotes}</span>
             </div>
             <div className="flex items-center space-x-1">
               <FaComment className="w-4 h-4" />
-              <span>{answers?.length || 0}</span>
+              <span>{questionData.commentCount}</span>
             </div>
           </div>
         </div>

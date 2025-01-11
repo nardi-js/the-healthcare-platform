@@ -122,7 +122,7 @@ export default function QuestionDetailsPage() {
             </div>
           </div>
 
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 break-words">
             {question.title}
           </h1>
           <div className="prose dark:prose-invert max-w-none">

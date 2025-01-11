@@ -53,14 +53,14 @@ export default function Question({
             {author?.name || "Anonymous"}
           </div>
           <div className="text-gray-500 dark:text-gray-400 text-sm">
-            {formatDistanceToNow(createdAt)} ago
+            {formatDistanceToNow(new Date(createdAt))} ago
           </div>
         </div>
       </div>
 
       {/* Question Title */}
-      <Link href={`/questions/${id}`} className="block mb-3">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200">
+      <Link href={`/questions/${id}`} className="block mb-3 group">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-200 break-words line-clamp-2">
           {title}
         </h3>
       </Link>
