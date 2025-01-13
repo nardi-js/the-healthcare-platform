@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { collection, query, where, getDocs, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
-import { FaCheck, FaTimes, FaSpinner } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaSpinner, FaShieldAlt } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 export default function TrustedUserVerification() {
@@ -38,18 +38,22 @@ export default function TrustedUserVerification() {
   const handleVerification = async (applicationId, isApproved) => {
     try {
       const applicationRef = doc(db, 'trusted-applications', applicationId);
-      const userRef = doc(db, 'users', applications.find(app => app.id === applicationId).userId);
+      const application = applications.find(app => app.id === applicationId);
+      const userRef = doc(db, 'users', application.userId);
 
       await updateDoc(applicationRef, {
         status: isApproved ? 'approved' : 'rejected',
         reviewedAt: serverTimestamp(),
-        reviewedBy: auth.currentUser.uid
+        reviewedBy: auth.currentUser.uid,
+        reviewerName: auth.currentUser.displayName || auth.currentUser.email
       });
 
       if (isApproved) {
         await updateDoc(userRef, {
           isTrusted: true,
-          trustedSince: serverTimestamp()
+          trustedSince: serverTimestamp(),
+          verifiedBy: auth.currentUser.uid,
+          verifierName: auth.currentUser.displayName || auth.currentUser.email
         });
       }
 
@@ -86,22 +90,33 @@ export default function TrustedUserVerification() {
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white">
+                  <h3 className="font-medium text-gray-900 dark:text-white flex items-center">
                     {application.userName || application.userEmail}
+                    {application.isTrusted && (
+                      <FaShieldAlt className="ml-2 text-blue-500" />
+                    )}
                   </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Email: {application.userEmail}
+                  </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     Submitted: {application.submittedAt?.toLocaleDateString()}
                   </p>
-                </div>
-                <div className="flex space-x-2">
-                  <a
-                    href={application.documentUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
-                  >
-                    View Document
-                  </a>
+                  {application.message && (
+                    <p className="mt-2 text-gray-700 dark:text-gray-300">
+                      Message: {application.message}
+                    </p>
+                  )}
+                  {application.status === 'approved' && (
+                    <p className="mt-2 text-green-600 dark:text-green-300">
+                      Approved by {application.reviewerName} on {application.reviewedAt?.toLocaleDateString()}
+                    </p>
+                  )}
+                  {application.status === 'rejected' && (
+                    <p className="mt-2 text-red-600 dark:text-red-300">
+                      Rejected by {application.reviewerName} on {application.reviewedAt?.toLocaleDateString()}
+                    </p>
+                  )}
                 </div>
               </div>
 

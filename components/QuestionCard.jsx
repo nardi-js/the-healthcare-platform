@@ -8,6 +8,7 @@ import { FaEye, FaComment, FaTags, FaUser, FaThumbsUp } from "react-icons/fa";
 import Image from "next/image";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import Username from './Username';
 
 const QuestionCard = ({ question }) => {
   const {
@@ -25,7 +26,6 @@ const QuestionCard = ({ question }) => {
     commentCount: question.commentCount || 0
   });
 
-  // Listen to real-time updates for the question
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(db, "questions", id), (doc) => {
       if (doc.exists()) {
@@ -78,15 +78,8 @@ const QuestionCard = ({ question }) => {
             />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-900 dark:text-white">
-              {author?.name || "Anonymous"}
-              {author?.isTrusted && (
-                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                  Trusted
-                </span>
-              )}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <Username userId={author?.id} username={author?.name || "Anonymous"} />
+            <p className="text-xs text-gray-500 dark:text-white">
               {formatDate(createdAt)}
             </p>
           </div>
@@ -103,20 +96,20 @@ const QuestionCard = ({ question }) => {
               {tags?.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200"
+                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-400"
                 >
                   {tag}
                 </span>
               ))}
               {category && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-400">
                   {category}
                 </span>
               )}
             </div>
           </div>
 
-          <div className="flex flex-col items-end space-y-2 ml-4 text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex flex-col items-end space-y-2 ml-4 text-sm text-gray-500 dark:text-white">
             <div className="flex items-center space-x-1">
               <FaEye className="w-4 h-4" />
               <span>{questionData.views}</span>

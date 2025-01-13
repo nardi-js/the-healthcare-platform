@@ -8,6 +8,7 @@ import { db } from '@/lib/firebase';
 import { doc, updateDoc, arrayUnion, arrayRemove, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '@/context/useAuth';
 import toast from 'react-hot-toast';
+import Username from './Username';
 
 const Comment = ({ comment, level = 0, onReply, onDelete, onEdit, onLike, user, formatDate }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -89,9 +90,7 @@ const Comment = ({ comment, level = 0, onReply, onDelete, onEdit, onLike, user, 
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-medium text-gray-900 dark:text-white hover:underline cursor-pointer">
-                  {comment.author.displayName}
-                </span>
+                <Username userId={comment.author.uid} username={comment.author.displayName} />
                 <span className="text-xs text-gray-500 dark:text-gray-400">
                   {formatDate(comment.createdAt)}
                 </span>

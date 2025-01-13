@@ -9,6 +9,7 @@ import { doc, collection, addDoc, deleteDoc, updateDoc, serverTimestamp } from '
 import { useAuth } from '@/context/useAuth';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
+import Username from './Username';
 
 const Comment = ({ comment, level = 0, onReply, onDelete, onEdit, onLike, user, formatDate }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -83,9 +84,7 @@ const Comment = ({ comment, level = 0, onReply, onDelete, onEdit, onLike, user, 
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-medium text-gray-900 dark:text-white hover:underline cursor-pointer">
-                  {comment.author.name}
-                </span>
+                <Username userId={comment.author.id} username={comment.author.name} />
                 <span className="text-xs text-gray-500 dark:text-gray-400">
                   {formatDate(comment.createdAt)}
                 </span>

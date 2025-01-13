@@ -91,30 +91,26 @@ const SignUp = () => {
       
       try {
         // Create user profile in Firestore
-        await setDoc(doc(db, "userProfiles", user.uid), {
+        await setDoc(doc(db, "users", user.userId), {
           username,
           email: user.email,
           createdAt: new Date().toISOString(),
-          displayName: username,
-          photoURL: null,
-          bio: "",
-          specialty: "",
-          location: "",
-          contactInformation: {},
-          professionalCredentials: []
+          updatedAt: new Date().toISOString(),
+          // Set isAdmin if email matches admin email
+          isAdmin: user.email === "abdulrahman1stu141@gmail.com"
         });
 
         // Create username document
         await setDoc(doc(db, "usernames", username), {
-          uid: user.uid,
+          userId: user.userId,
           email: user.email,
           createdAt: new Date().toISOString(),
         });
 
         toast.success("Account created successfully!");
         router.push("/sign-in");
-      } catch (firestoreError) {
-        console.error("Firestore error:", firestoreError);
+      } catch (error) {
+        console.error("Firestore error:", error);
         // If Firestore fails, we should still let the user know they can sign in
         toast.success("Account created! Some profile features may be limited until you're back online.");
         router.push("/sign-in");
@@ -146,10 +142,11 @@ const SignUp = () => {
 
       try {
         // Create user profile
-        await setDoc(doc(db, "userProfiles", user.uid), {
+        await setDoc(doc(db, "users", user.userId), {
           username: user.email.split('@')[0],
           email: user.email,
           createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
           displayName: user.displayName || user.email.split('@')[0],
           photoURL: user.photoURL,
           bio: "",

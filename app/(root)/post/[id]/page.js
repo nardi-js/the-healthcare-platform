@@ -13,6 +13,7 @@ import ReportModal from '@/components/ReportModal';
 import VoteSystem from '@/components/VoteSystem';
 import PostComment from '@/components/PostComment';
 import { recordPostView } from '@/lib/utils/postViews';
+import Username from '@/components/Username'; // Import the Username component
 
 export default function PostPage() {
   const params = useParams();
@@ -159,13 +160,15 @@ export default function PostPage() {
                 className="rounded-full"
               />
               <div>
-                <h2 className="font-semibold text-gray-900 dark:text-white">
-                  {post.author.name}
-                </h2>
-                <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                  <FaClock className="w-3 h-3" />
-                  <span>{formatDate(post.createdAt)}</span>
-                </div>
+                {post && (
+                  <div className="flex items-center space-x-4">
+                    <Username userId={post.author?.id} username={post.author?.name} />
+                    <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                      <FaClock className="w-4 h-4" />
+                      <span>{formatDate(post.createdAt)}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex items-center space-x-4">

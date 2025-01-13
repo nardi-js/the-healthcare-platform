@@ -1,9 +1,12 @@
 "use client";
 
+import { useAuth } from "@/context/useAuth";
+import { useSidebar } from "@/context/SidebarContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSidebar } from "@/context/SidebarContext";
-import { useAuth } from "@/context/useAuth";
+import { useState, useEffect } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import {
   FaHome,
   FaChartBar,
@@ -16,10 +19,29 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 
-const Sidebar = () => {
-  const pathname = usePathname();
-  const { isSidebarOpen } = useSidebar();
+export default function Sidebar() {
   const { user } = useAuth();
+  const { isSidebarOpen } = useSidebar();
+  const pathname = usePathname();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isTrusted, setIsTrusted] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      checkUserStatus();
+    }
+  }, [user]);
+
+  const checkUserStatus = async () => {
+    try {
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      const userData = userDoc.data();
+      setIsAdmin(userData?.isAdmin || false);
+      setIsTrusted(userData?.isTrusted || false);
+    } catch (error) {
+      console.error("Error checking user status:", error);
+    }
+  };
 
   const mainLinks = [
     { name: "Home", href: "/home", icon: FaHome },
@@ -29,6 +51,21 @@ const Sidebar = () => {
   const communityLinks = [
     { name: "Questions", href: "/questions", icon: FaQuestion },
     { name: "Posts", href: "/posts", icon: FaComments },
+  ];
+
+  const adminLinks = [
+    ...(isAdmin ? [
+      {
+        name: "Trusted Applications",
+        href: "/admin/trusted-verification",
+        icon: FaUserShield,
+      },
+      {
+        name: "Manage Trusted Users",
+        href: "/admin/trusted-users",
+        icon: FaUserShield,
+      }
+    ] : []),
   ];
 
   const trustedUserLinks = [
@@ -103,8 +140,18 @@ const Sidebar = () => {
             <div className="mt-3 space-y-1">{renderLinks(communityLinks)}</div>
           </div>
 
+          {/* Admin Section */}
+          {isAdmin && (
+            <div>
+              <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Admin
+              </h3>
+              <div className="mt-3 space-y-1">{renderLinks(adminLinks)}</div>
+            </div>
+          )}
+
           {/* Trusted User Section */}
-          {user && !user.isTrusted && (
+          {!isAdmin && !isTrusted && (
             <div>
               <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Verification
@@ -116,6 +163,4 @@ const Sidebar = () => {
       </div>
     </aside>
   );
-};
-
-export default Sidebar;
+}

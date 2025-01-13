@@ -7,6 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/useAuth";
+import Username from './Username';
 
 export default function Question({
   id,
@@ -50,7 +51,7 @@ export default function Question({
         </div>
         <div className="flex-grow">
           <div className="text-gray-900 dark:text-white font-medium">
-            {author?.name || "Anonymous"}
+            <Username userId={author?.id} username={author?.name} />
           </div>
           <div className="text-gray-500 dark:text-gray-400 text-sm">
             {formatDistanceToNow(new Date(createdAt))} ago

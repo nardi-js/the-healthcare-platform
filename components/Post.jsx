@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import '@/public/styles/Post.css'; // Importing styles for Post
 import { useAuth } from "@/context/useAuth";
 import { FaFileAlt, FaPlayCircle, FaExpand } from "react-icons/fa";
+import Link from 'next/link';
 
 import VoteSystem from "./VoteSystem";
 import CommentSystem from "./CommentSystem";
@@ -94,7 +95,12 @@ const Post = ({
           />
           <div>
             <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-              {author.name}
+              <Link href={`/users/${author.id}`}>
+                {author.name}
+              </Link>
+              {author.trustMark && (
+                <span className="text-purple-600 text-sm ml-1">✓</span>
+              )}
             </h3>
             <p className="text-sm text-gray-500">
               {new Date(createdAt?.seconds * 1000).toLocaleString()}

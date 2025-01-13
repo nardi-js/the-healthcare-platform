@@ -3,8 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FaEye, FaThumbsUp, FaComment } from "react-icons/fa";
+import { FaEye, FaThumbsUp, FaComment, FaShare, FaUser } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
+import Username from "./Username";
 
 export default function PostCard({ post }) {
   const router = useRouter();
@@ -21,11 +22,21 @@ export default function PostCard({ post }) {
       {/* Author Info */}
       <div className="flex items-center space-x-3 mb-4">
         <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white font-semibold">
-          {post.author?.name?.[0] || "A"}
+          {post.author?.photoURL ? (
+            <Image
+              src={post.author.photoURL}
+              alt={post.author.name}
+              width={32}
+              height={32}
+              className="rounded-full"
+            />
+          ) : (
+            <FaUser className="text-purple-600 dark:text-purple-400" />
+          )}
         </div>
         <div>
           <p className="text-sm font-medium text-gray-900 dark:text-white">
-            {post.author?.name ? post.author.name : "Anonymous"}
+            <Username userId={post.author?.id} username={post.author?.name || "Anonymous"} />
             {post.author?.isTrusted && (
               <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                 Trusted

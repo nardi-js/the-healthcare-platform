@@ -9,6 +9,7 @@ import { formatDistanceToNow } from "date-fns";
 import { FaClock, FaEye, FaTags, FaUser } from "react-icons/fa";
 import VoteSystem from "@/components/VoteSystem";
 import QuestionComment from "@/components/QuestionComment";
+import Username from '@/components/Username';
 
 export default function QuestionDetailsPage() {
   const params = useParams();
@@ -109,13 +110,21 @@ export default function QuestionDetailsPage() {
         <div className="p-6 border-b dark:border-gray-700">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
-              <FaUser className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              {question.author?.photoURL ? (
+                <Image
+                  src={question.author.photoURL}
+                  alt={question.author.name}
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+              ) : (
+                <FaUser className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              )}
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {question.author?.name || "Anonymous"}
-              </h2>
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <Username userId={question.author?.id} username={question.author?.name || "Anonymous"} />
+              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-white">
                 <FaClock className="w-4 h-4" />
                 <span>{formatDistanceToNow(question.createdAt)} ago</span>
               </div>
@@ -202,9 +211,7 @@ export default function QuestionDetailsPage() {
                 <FaUser className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <div className="font-medium text-gray-900 dark:text-white">
-                  {answer.author?.name || "Anonymous"}
-                </div>
+                <Username userId={answer.author?.id} username={answer.author?.name || "Anonymous"} />
                 <div className="text-sm text-gray-500 dark:text-gray-400">
                   {formatDistanceToNow(answer.createdAt)} ago
                 </div>
