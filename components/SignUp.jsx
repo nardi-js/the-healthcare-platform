@@ -91,7 +91,7 @@ const SignUp = () => {
       
       try {
         // Create user profile in Firestore
-        await setDoc(doc(db, "users", user.userId), {
+        await setDoc(doc(db, "users", user.uid), {
           username,
           email: user.email,
           createdAt: new Date().toISOString(),
@@ -102,7 +102,7 @@ const SignUp = () => {
 
         // Create username document
         await setDoc(doc(db, "usernames", username), {
-          userId: user.userId,
+          userId: user.uid,
           email: user.email,
           createdAt: new Date().toISOString(),
         });
@@ -142,7 +142,7 @@ const SignUp = () => {
 
       try {
         // Create user profile
-        await setDoc(doc(db, "users", user.userId), {
+        await setDoc(doc(db, "users", user.uid), {
           username: user.email.split('@')[0],
           email: user.email,
           createdAt: new Date().toISOString(),
