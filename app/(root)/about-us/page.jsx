@@ -5,88 +5,124 @@ import Image from "next/image";
 const AboutUs = () => {
   const teamMembers = [
     {
-      name: "Dr. Sarah Johnson",
-      role: "Lead Healthcare Specialist",
-      email: "sarah.johnson@healthcare-platform.com",
-      image: "/team/sarah.jpg",
-      background: "Dr. Sarah Johnson has over 15 years of experience in healthcare technology. She completed her MD at Stanford University and later pursued a Master's in Health Informatics. Her passion lies in making healthcare more accessible through technology.",
+      name: "Ahmad Albab",
+      role: "Team Lead & Full Stack Developer",
+      email: "ahmad@healthcare-platform.com",
+      image: "/team/member1.jpg",
     },
     {
-      name: "Michael Chen",
-      role: "Technical Lead",
-      email: "michael.chen@healthcare-platform.com",
-      image: "/team/michael.jpg",
-      background: "Michael is a seasoned software engineer with a focus on healthcare systems. He holds a Master's in Computer Science from MIT and has previously worked on several successful healthcare startups.",
+      name: "Sarah Rahman",
+      role: "UI/UX Designer",
+      email: "sarah@healthcare-platform.com",
+      image: "/team/member2.jpg",
     },
     {
-      name: "Dr. Emily Rodriguez",
-      role: "Medical Content Director",
-      email: "emily.rodriguez@healthcare-platform.com",
-      image: "/team/emily.jpg",
-      background: "Dr. Rodriguez brings her expertise in medical education and content creation. She has practiced medicine for 10 years and is passionate about making medical information more accessible to the public.",
+      name: "Mohammed Ali",
+      role: "Backend Developer",
+      email: "mohammed@healthcare-platform.com",
+      image: "/team/member3.jpg",
     },
+    {
+      name: "Fatima Hassan",
+      role: "Frontend Developer",
+      email: "fatima@healthcare-platform.com",
+      image: "/team/member4.jpg",
+    },
+    {
+      name: "Yusuf Khan",
+      role: "Quality Assurance Engineer",
+      email: "yusuf@healthcare-platform.com",
+      image: "/team/member5.jpg",
+    },
+  ];
+
+  const statistics = [
+    { number: "1M+", label: "Users Helped" },
+    { number: "50K+", label: "Healthcare Professionals" },
+    { number: "100K+", label: "Questions Answered" },
+    { number: "98%", label: "User Satisfaction" },
   ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Platform Description */}
-      <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-          About The Healthcare Platform
+      {/* Hero Section */}
+      <div className="text-center mb-20">
+        <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
+          Revolutionizing Healthcare Access
         </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-          The Healthcare Platform is a revolutionary space where healthcare professionals
-          and patients come together to share knowledge, experiences, and support.
-          Our mission is to make quality healthcare information accessible to everyone
-          while fostering a community of care and expertise.
+        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed">
+          The Healthcare Platform is where innovation meets compassion. We're transforming 
+          the way healthcare information is shared and accessed, creating a bridge between 
+          healthcare professionals and those seeking reliable medical guidance.
         </p>
       </div>
 
-      {/* Our Vision */}
-      <div className="mb-16">
+
+      {/* Mission Statement */}
+      <div className="mb-20">
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
+          Our Mission
+        </h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg">
+          <p className="text-xl text-gray-600 dark:text-gray-300 text-center leading-relaxed">
+            To democratize healthcare knowledge by creating a trusted platform where expertise 
+            meets accessibility. We believe that quality healthcare information should be 
+            available to everyone, regardless of their location or circumstances.
+          </p>
+        </div>
+      </div>
+
+      {/* Our Vision */}
+      <div className="mb-20">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">
           Our Vision
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+          <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+            <div className="text-purple-600 dark:text-purple-400 text-4xl mb-4">🌍</div>
             <h3 className="text-xl font-semibold mb-4 text-purple-600 dark:text-purple-400">
-              Accessible Healthcare
+              Global Access
             </h3>
             <p className="text-gray-600 dark:text-gray-300">
-              Making quality healthcare information available to everyone, anywhere.
+              Breaking down geographical barriers to make quality healthcare information 
+              available worldwide, 24/7.
             </p>
           </div>
-          <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+          <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+            <div className="text-purple-600 dark:text-purple-400 text-4xl mb-4">👥</div>
             <h3 className="text-xl font-semibold mb-4 text-purple-600 dark:text-purple-400">
               Community-Driven
             </h3>
             <p className="text-gray-600 dark:text-gray-300">
-              Building a supportive community of healthcare professionals and patients.
+              Fostering a supportive ecosystem where healthcare professionals and patients 
+              collaborate for better health outcomes.
             </p>
           </div>
-          <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+          <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+            <div className="text-purple-600 dark:text-purple-400 text-4xl mb-4">💡</div>
             <h3 className="text-xl font-semibold mb-4 text-purple-600 dark:text-purple-400">
               Innovation
             </h3>
             <p className="text-gray-600 dark:text-gray-300">
-              Leveraging technology to improve healthcare communication and education.
+              Continuously evolving our platform with cutting-edge technology to enhance 
+              healthcare communication and education.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Team Members */}
-      <div>
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">
+      {/* Team Section */}
+      <div className="py-16">
+        <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-12">
           Meet Our Team
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-          {teamMembers.map((member) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
+          {teamMembers.map((member, index) => (
             <div
-              key={member.name}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"
+              key={index}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105"
             >
-              <div className="aspect-w-1 aspect-h-1 relative h-64">
+              <div className="relative h-64 w-full">
                 <Image
                   src={member.image}
                   alt={member.name}
@@ -94,19 +130,14 @@ const AboutUs = () => {
                   className="object-cover"
                 />
               </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
+              <div className="p-6 text-center">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                   {member.name}
                 </h3>
-                <p className="text-purple-600 dark:text-purple-400 font-medium mb-2">
-                  {member.role}
-                </p>
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                  {member.background}
-                </p>
+
                 <a
-                  href={`mailto:${member.email}`}
-                  className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
+                  href={'mailto:${member.email}'}
+                  className="inline-block text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                 >
                   {member.email}
                 </a>
@@ -116,7 +147,6 @@ const AboutUs = () => {
         </div>
       </div>
     </div>
-  );
+  )
 };
-
 export default AboutUs;
