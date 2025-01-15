@@ -7,7 +7,7 @@ import { FaFileAlt, FaPlayCircle, FaExpand } from "react-icons/fa";
 import Link from 'next/link';
 
 import VoteSystem from "./VoteSystem";
-import CommentSystem from "./CommentSystem";
+import CommentSystem from "./common/CommentSystem";
 import ShareSystem from "./ShareSystem";
 
 const Post = ({

@@ -8,13 +8,14 @@ import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import { FaClock, FaEye, FaTags, FaUser } from "react-icons/fa";
 import VoteSystem from "@/components/VoteSystem";
-import QuestionComment from "@/components/QuestionComment";
+import CommentSystem from "@/components/common/CommentSystem";
 import Username from '@/components/Username';
 
 export default function QuestionDetailsPage() {
   const params = useParams();
   const [question, setQuestion] = useState(null);
   const [answers, setAnswers] = useState([]);
+  const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showComments, setShowComments] = useState(false);
 
@@ -61,6 +62,25 @@ export default function QuestionDetailsPage() {
     };
 
     fetchAnswers();
+  }, [params.id]);
+
+  // Add real-time listener for comments
+  useEffect(() => {
+    if (!params.id) return;
+
+    const commentsRef = collection(db, "questions", params.id, "comments");
+    const commentsQuery = query(commentsRef, orderBy("createdAt", "desc"));
+    
+    const unsubscribe = onSnapshot(commentsQuery, (snapshot) => {
+      const commentsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate?.() || new Date(doc.data().createdAt)
+      }));
+      setComments(commentsData);
+    });
+
+    return () => unsubscribe();
   }, [params.id]);
 
   // Increment view count only once when the component mounts
@@ -178,20 +198,13 @@ export default function QuestionDetailsPage() {
 
           {/* Comments Section */}
           <div className="mt-8">
-            <button
-              onClick={() => setShowComments(!showComments)}
-              className="text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
-            >
-              {showComments ? "Hide Comments" : `Show Comments (${question.comments?.length || 0})`}
-            </button>
-            {showComments && (
-              <div className="mt-4">
-                <QuestionComment
-                  questionId={params.id}
-                  comments={question.comments || []}
-                />
-              </div>
-            )}
+            <h2 className="text-2xl font-bold mb-4 dark:text-white">Comments</h2>
+            <CommentSystem
+              type="question"
+              itemId={params.id}
+              comments={comments}
+              onCommentUpdate={() => {}} // No need for manual update since we have real-time listener
+            />
           </div>
         </div>
       </div>

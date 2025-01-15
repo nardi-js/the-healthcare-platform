@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/useAuth';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, increment, collection, query, orderBy, getDocs, addDoc } from 'firebase/firestore';
-import { FaThumbsUp, FaThumbsDown, FaComment, FaShare, FaFlag } from 'react-icons/fa';
+import { FaThumbsUp, FaThumbsDown, FaComment, FaShare } from 'react-icons/fa';
 import Image from 'next/image';
-import ReportModal from '@/components/ReportModal';
 
 export default function PostDetail({ postId }) {
   const router = useRouter();
@@ -17,7 +16,7 @@ export default function PostDetail({ postId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [comment, setComment] = useState('');
-  const [showReportModal, setShowReportModal] = useState(false);
+  const [showComments, setShowComments] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -228,12 +227,6 @@ export default function PostDetail({ postId }) {
                 <span>{comments.length}</span>
               </div>
             </div>
-            <button
-              onClick={() => setShowReportModal(true)}
-              className="text-gray-500 hover:text-red-500"
-            >
-              <FaFlag />
-            </button>
           </div>
         </div>
 
@@ -259,42 +252,40 @@ export default function PostDetail({ postId }) {
           </form>
 
           {/* Comments List */}
-          <div className="space-y-4">
-            {comments.map((comment) => (
-              <div key={comment.id} className="border-b dark:border-gray-700 pb-4">
-                <div className="flex items-center mb-2">
-                  <Image
-                    src={comment.author.avatar}
-                    alt={comment.author.name}
-                    width={32}
-                    height={32}
-                    className="rounded-full"
-                  />
-                  <div className="ml-2">
-                    <p className="font-semibold text-gray-900 dark:text-white">
-                      {comment.author.name}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(comment.createdAt).toLocaleDateString()}
-                    </p>
+          {showComments && (
+            <div className="space-y-4">
+              {comments.map((comment) => (
+                <div key={comment.id} className="border-b dark:border-gray-700 pb-4">
+                  <div className="flex items-center mb-2">
+                    <Image
+                      src={comment.author.avatar}
+                      alt={comment.author.name}
+                      width={32}
+                      height={32}
+                      className="rounded-full"
+                    />
+                    <div className="ml-2">
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        {comment.author.name}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(comment.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
+                  <p className="text-gray-900 dark:text-white ml-10">{comment.content}</p>
                 </div>
-                <p className="text-gray-900 dark:text-white ml-10">{comment.content}</p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
+          <button
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            onClick={() => setShowComments(!showComments)}
+          >
+            <FaComment className="w-5 h-5" />
+          </button>
         </div>
       </div>
-
-      {/* Report Modal */}
-      {showReportModal && (
-        <ReportModal
-          isOpen={showReportModal}
-          onClose={() => setShowReportModal(false)}
-          contentId={postId}
-          contentType="post"
-        />
-      )}
     </div>
   );
 }

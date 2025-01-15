@@ -4,14 +4,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/context/useAuth';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, collection, query, orderBy, getDocs } from 'firebase/firestore';
-import { FaEye, FaFlag, FaUser, FaClock, FaUserClock } from 'react-icons/fa';
+import { doc, getDoc, updateDoc, increment, collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { FaThumbsUp, FaThumbsDown, FaComment, FaShare, FaEye, FaFlag, FaUser, FaClock, FaUserClock } from 'react-icons/fa';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
-import ReportModal from '@/components/ReportModal';
 import VoteSystem from '@/components/VoteSystem';
-import PostComment from '@/components/PostComment';
+import CommentSystem from '@/components/common/CommentSystem';
 import { recordPostView } from '@/lib/utils/postViews';
 import Username from '@/components/Username'; // Import the Username component
 
@@ -23,7 +22,8 @@ export default function PostPage() {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showReportModal, setShowReportModal] = useState(false);
+  const [comment, setComment] = useState('');
+  const [showComments, setShowComments] = useState(false);
   const [viewCount, setViewCount] = useState(0);
 
   const fetchPost = useCallback(async () => {
@@ -238,37 +238,27 @@ export default function PostPage() {
               postId={post.id}
             />
             <button
-              onClick={() => setShowReportModal(true)}
-              className="text-gray-500 hover:text-red-500"
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              onClick={() => setShowComments(!showComments)}
             >
-              <FaFlag />
+              <FaComment className="w-5 h-5" />
             </button>
           </div>
         </motion.div>
 
         {/* Comments Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
-        >
-          <PostComment
-            postId={post.id}
-            comments={comments}
-            onCommentUpdate={setComments}
-          />
-        </motion.div>
+        {showComments && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold mb-4 dark:text-white">Comments</h2>
+            <CommentSystem
+              type="post"
+              itemId={id}
+              comments={comments}
+              onCommentUpdate={fetchPost}
+            />
+          </div>
+        )}
       </div>
-
-      {/* Report Modal */}
-      {showReportModal && (
-        <ReportModal
-          isOpen={showReportModal}
-          onClose={() => setShowReportModal(false)}
-          contentId={id}
-          contentType="post"
-        />
-      )}
     </div>
   );
 }
