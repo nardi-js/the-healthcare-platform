@@ -1,12 +1,22 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/useAuth';
-import { db } from '@/lib/firebase';
-import { doc, getDoc, updateDoc, increment, collection, query, orderBy, getDocs, addDoc } from 'firebase/firestore';
-import { FaThumbsUp, FaThumbsDown, FaComment, FaShare } from 'react-icons/fa';
-import Image from 'next/image';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/useAuth";
+import { db } from "@/lib/firebase";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  increment,
+  collection,
+  query,
+  orderBy,
+  getDocs,
+  addDoc,
+} from "firebase/firestore";
+import { FaThumbsUp, FaThumbsDown, FaComment, FaShare } from "react-icons/fa";
+import Image from "next/image";
 
 export default function PostDetail({ postId }) {
   const router = useRouter();
@@ -15,25 +25,25 @@ export default function PostDetail({ postId }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
       if (!postId) return;
-      
+
       try {
         setLoading(true);
-        const postDoc = await getDoc(doc(db, 'posts', postId));
-        
+        const postDoc = await getDoc(doc(db, "posts", postId));
+
         if (!postDoc.exists()) {
-          setError('Post not found');
+          setError("Post not found");
           return;
         }
 
         // Increment view count
-        await updateDoc(doc(db, 'posts', postId), {
-          views: increment(1)
+        await updateDoc(doc(db, "posts", postId), {
+          views: increment(1),
         });
 
         setPost({
@@ -44,20 +54,19 @@ export default function PostDetail({ postId }) {
 
         // Fetch comments
         const commentsQuery = query(
-          collection(db, 'posts', postId, 'comments'),
-          orderBy('createdAt', 'desc')
+          collection(db, "posts", postId, "comments"),
+          orderBy("createdAt", "desc")
         );
         const commentsSnapshot = await getDocs(commentsQuery);
-        const commentsList = commentsSnapshot.docs.map(doc => ({
+        const commentsList = commentsSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
           createdAt: doc.data().createdAt?.toDate() || new Date(),
         }));
         setComments(commentsList);
-
       } catch (err) {
-        console.error('Error fetching post:', err);
-        setError('Failed to load post');
+        console.error("Error fetching post:", err);
+        setError("Failed to load post");
       } finally {
         setLoading(false);
       }
@@ -68,62 +77,61 @@ export default function PostDetail({ postId }) {
 
   const handleVote = async (type) => {
     if (!user) {
-      router.push('/sign-in');
+      router.push("/sign-in");
       return;
     }
 
     try {
-      const postRef = doc(db, 'posts', postId);
-      if (type === 'up') {
+      const postRef = doc(db, "posts", postId);
+      if (type === "up") {
         await updateDoc(postRef, {
-          upvotes: increment(1)
+          upvotes: increment(1),
         });
-        setPost(prev => ({ ...prev, upvotes: (prev.upvotes || 0) + 1 }));
+        setPost((prev) => ({ ...prev, upvotes: (prev.upvotes || 0) + 1 }));
       } else {
         await updateDoc(postRef, {
-          downvotes: increment(1)
+          downvotes: increment(1),
         });
-        setPost(prev => ({ ...prev, downvotes: (prev.downvotes || 0) + 1 }));
+        setPost((prev) => ({ ...prev, downvotes: (prev.downvotes || 0) + 1 }));
       }
     } catch (err) {
-      console.error('Error voting:', err);
+      console.error("Error voting:", err);
     }
   };
 
   const handleComment = async (e) => {
     e.preventDefault();
     if (!user) {
-      router.push('/sign-in');
+      router.push("/sign-in");
       return;
     }
 
     if (!comment.trim()) return;
 
     try {
-      const commentsRef = collection(db, 'posts', postId, 'comments');
+      const commentsRef = collection(db, "posts", postId, "comments");
       const newComment = {
         content: comment,
         author: {
           id: user.uid,
-          name: user.displayName || 'Anonymous',
-          avatar: user.photoURL || '/download.png'
+          name: user.displayName || "Anonymous",
+          avatar: user.photoURL || "/download.png",
         },
         createdAt: new Date(),
       };
 
       await addDoc(commentsRef, newComment);
-      
+
       // Update post's comment count
-      await updateDoc(doc(db, 'posts', postId), {
-        commentCount: increment(1)
+      await updateDoc(doc(db, "posts", postId), {
+        commentCount: increment(1),
       });
 
       // Update local state
-      setComments(prev => [{ id: Date.now(), ...newComment }, ...prev]);
-      setComment('');
-      
+      setComments((prev) => [{ id: Date.now(), ...newComment }, ...prev]);
+      setComment("");
     } catch (err) {
-      console.error('Error adding comment:', err);
+      console.error("Error adding comment:", err);
     }
   };
 
@@ -160,7 +168,9 @@ export default function PostDetail({ postId }) {
               className="rounded-full"
             />
             <div className="ml-3">
-              <p className="font-semibold text-gray-900 dark:text-white">{post.author.name}</p>
+              <p className="font-semibold text-gray-900 dark:text-white">
+                {post.author.name}
+              </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {new Date(post.createdAt).toLocaleDateString()}
               </p>
@@ -169,7 +179,9 @@ export default function PostDetail({ postId }) {
 
           {/* Post Content */}
           <div className="prose dark:prose-invert max-w-none mb-6">
-            <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{post.content}</p>
+            <p className="text-gray-900 dark:text-white whitespace-pre-wrap">
+              {post.content}
+            </p>
           </div>
 
           {/* Media Content */}
@@ -177,7 +189,7 @@ export default function PostDetail({ postId }) {
             <div className="grid grid-cols-1 gap-4 mb-6">
               {post.media.map((item, index) => (
                 <div key={index} className="relative">
-                  {item.type === 'image' && (
+                  {item.type === "image" && (
                     <Image
                       src={item.url}
                       alt="Post media"
@@ -209,14 +221,14 @@ export default function PostDetail({ postId }) {
           <div className="flex items-center justify-between pt-4 border-t dark:border-gray-700">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => handleVote('up')}
+                onClick={() => handleVote("up")}
                 className="flex items-center space-x-1 text-gray-500 hover:text-purple-500"
               >
                 <FaThumbsUp />
                 <span>{post.upvotes || 0}</span>
               </button>
               <button
-                onClick={() => handleVote('down')}
+                onClick={() => handleVote("down")}
                 className="flex items-center space-x-1 text-gray-500 hover:text-purple-500"
               >
                 <FaThumbsDown />
@@ -232,8 +244,10 @@ export default function PostDetail({ postId }) {
 
         {/* Comments Section */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Comments</h2>
-          
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+            Comments
+          </h2>
+
           {/* Comment Form */}
           <form onSubmit={handleComment} className="mb-6">
             <textarea
@@ -255,7 +269,10 @@ export default function PostDetail({ postId }) {
           {showComments && (
             <div className="space-y-4">
               {comments.map((comment) => (
-                <div key={comment.id} className="border-b dark:border-gray-700 pb-4">
+                <div
+                  key={comment.id}
+                  className="border-b dark:border-gray-700 pb-4"
+                >
                   <div className="flex items-center mb-2">
                     <Image
                       src={comment.author.avatar}
@@ -273,7 +290,9 @@ export default function PostDetail({ postId }) {
                       </p>
                     </div>
                   </div>
-                  <p className="text-gray-900 dark:text-white ml-10">{comment.content}</p>
+                  <p className="text-gray-900 dark:text-white ml-10">
+                    {comment.content}
+                  </p>
                 </div>
               ))}
             </div>

@@ -208,34 +208,6 @@ export default function QuestionDetailsPage() {
           </div>
         </div>
       </div>
-
-      {/* Answers Section */}
-      <div className="mt-8">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-          {answers.length} {answers.length === 1 ? "Answer" : "Answers"}
-        </h2>
-        {answers.map((answer) => (
-          <div
-            key={answer.id}
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-4"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
-                <FaUser className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              </div>
-              <div>
-                <Username userId={answer.author?.id} username={answer.author?.name || "Anonymous"} />
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {formatDistanceToNow(answer.createdAt)} ago
-                </div>
-              </div>
-            </div>
-            <div className="prose dark:prose-invert max-w-none">
-              <p className="text-gray-700 dark:text-gray-300">{answer.content}</p>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

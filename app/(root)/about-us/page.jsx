@@ -1,14 +1,17 @@
 "use client";
 
 import Image from "next/image";
+import AbdulkareemImage from "@/public/Abdulkareem.jpg";
+import Safiullah from "@/public/Safiullah.jpg";
+import kamal from "@/public/kamal.jpg";
 
 const AboutUs = () => {
   const teamMembers = [
     {
-      name: "Ahmad Albab",
+      name: "Nardi",
       role: "Team Lead & Full Stack Developer",
       email: "ahmad@healthcare-platform.com",
-      image: "/team/member1.jpg",
+      image: AbdulkareemImage,
     },
     {
       name: "Sarah Rahman",
@@ -17,22 +20,22 @@ const AboutUs = () => {
       image: "/team/member2.jpg",
     },
     {
-      name: "Mohammed Ali",
+      name: "Abdul Rahman Bin Mohd Kamal",
       role: "Backend Developer",
       email: "mohammed@healthcare-platform.com",
-      image: "/team/member3.jpg",
+      image: kamal,
     },
     {
-      name: "Fatima Hassan",
+      name: "Safiullah Yousufzai",
       role: "Frontend Developer",
       email: "fatima@healthcare-platform.com",
-      image: "/team/member4.jpg",
+      image: Safiullah,
     },
     {
-      name: "Yusuf Khan",
+      name: "ABDULKAREEM SALEM BA WAZIR",
       role: "Quality Assurance Engineer",
       email: "yusuf@healthcare-platform.com",
-      image: "/team/member5.jpg",
+      image: AbdulkareemImage,
     },
   ];
 

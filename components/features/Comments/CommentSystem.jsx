@@ -199,7 +199,7 @@ const CommentSystem = ({ type, itemId, comments = [], onCommentUpdate }) => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 text-sm"
+              className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 dark:text-white rounded-md px-2 py-1 text-sm"
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
