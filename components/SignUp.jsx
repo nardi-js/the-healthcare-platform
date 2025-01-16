@@ -8,7 +8,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
@@ -79,6 +79,7 @@ const SignUp = () => {
 
     const { username, email, password } = formData;
     setLoading(true);
+    setError("");
 
     try {
       // Check online status
@@ -94,8 +95,8 @@ const SignUp = () => {
         await setDoc(doc(db, "users", user.uid), {
           username,
           email: user.email,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
           // Set isAdmin if email matches admin email
           isAdmin: user.email === "abdulrahman1stu141@gmail.com"
         });
@@ -104,38 +105,29 @@ const SignUp = () => {
         await setDoc(doc(db, "usernames", username), {
           userId: user.uid,
           email: user.email,
-          createdAt: new Date().toISOString(),
+          createdAt: serverTimestamp(),
         });
 
-        toast.success("Account created successfully!");
-        router.push("/sign-in");
-      } catch (error) {
-        console.error("Firestore error:", error);
+        toast.success("Account created successfully! Redirecting...");
+        router.push("/");
+      } catch (firestoreError) {
+        console.error("Firestore error:", firestoreError);
         // If Firestore fails, we should still let the user know they can sign in
-        toast.success("Account created! Some profile features may be limited until you're back online.");
+        toast.error("Account created but profile setup incomplete. You can still sign in.");
         router.push("/sign-in");
       }
     } catch (error) {
-      console.error("Sign up error:", error);
-      if (error.message.includes('offline')) {
-        toast.error("You're offline. Please check your internet connection.");
-      } else {
-        toast.error(error.message);
-      }
+      console.error("Signup error:", error);
       setError(error.message);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignUp = async () => {
-    if (loading) return;
-    
     try {
-      if (!navigator.onLine) {
-        throw new Error("You are offline. Please check your internet connection.");
-      }
-
+      setError("");
       setLoading(true);
       const result = await signInWithGoogle();
       const user = result.user;
@@ -145,8 +137,8 @@ const SignUp = () => {
         await setDoc(doc(db, "users", user.uid), {
           username: user.email.split('@')[0],
           email: user.email,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
           displayName: user.displayName || user.email.split('@')[0],
           photoURL: user.photoURL,
           bio: "",
@@ -165,15 +157,9 @@ const SignUp = () => {
         router.push("/profile");
       }
     } catch (error) {
-      if (error.code !== "auth/cancelled-popup-request") {
-        console.error("Google sign up error:", error);
-        if (error.message.includes('offline')) {
-          toast.error("You're offline. Please check your internet connection.");
-        } else {
-          toast.error(error.message);
-        }
-        setError(error.message);
-      }
+      console.error("Google sign up error:", error);
+      setError(error.message);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }

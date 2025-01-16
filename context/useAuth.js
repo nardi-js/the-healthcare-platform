@@ -68,6 +68,39 @@ const useProvideAuth = () => {
     }
   }, []);
 
+  const getFirebaseErrorMessage = (error) => {
+    switch (error.code) {
+      case 'auth/email-already-in-use':
+        return 'This email is already registered. Please sign in or use a different email.';
+      case 'auth/invalid-email':
+        return 'The email address is not valid.';
+      case 'auth/operation-not-allowed':
+        return 'Email/password accounts are not enabled. Please contact support.';
+      case 'auth/weak-password':
+        return 'The password is too weak. Please use at least 6 characters.';
+      case 'auth/user-disabled':
+        return 'This account has been disabled. Please contact support.';
+      case 'auth/user-not-found':
+        return 'No account found with this email. Please sign up first.';
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential':
+        return 'Incorrect email or password. Please try again.';
+      case 'auth/too-many-requests':
+        return 'Too many failed attempts. Please try again later.';
+      case 'auth/network-request-failed':
+        return 'Network error. Please check your internet connection.';
+      case 'auth/popup-closed-by-user':
+        return 'Sign in popup was closed before completion.';
+      case 'auth/cancelled-popup-request':
+        return 'The sign in process was cancelled.';
+      case 'auth/internal-error':
+        return 'An error occurred during sign in. Please try again.';
+      default:
+        console.error('Firebase auth error:', error);
+        return 'An error occurred. Please try again.';
+    }
+  };
+
   const signin = useCallback(async (email, password, persistenceLevel = 'local') => {
     try {
       setError(null);
@@ -76,8 +109,9 @@ const useProvideAuth = () => {
       const response = await signInWithEmailAndPassword(auth, email, password);
       return response.user;
     } catch (error) {
-      setError(error.message);
-      throw error;
+      const errorMessage = getFirebaseErrorMessage(error);
+      setError(errorMessage);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -93,8 +127,9 @@ const useProvideAuth = () => {
       }
       return response.user;
     } catch (error) {
-      setError(error.message);
-      throw error;
+      const errorMessage = getFirebaseErrorMessage(error);
+      setError(errorMessage);
+      return false;
     } finally {
       setLoading(false);
     }

@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { toast } from "react-hot-toast";
 
 const SignIn = () => {
   const {
@@ -50,22 +51,28 @@ const SignIn = () => {
     if (!validateForm()) return;
 
     try {
-      await signin(email, password);
-      router.push("/home");
+      setError("");
+      const user = await signin(email, password);
+      if (user) {
+        toast.success("Signed in successfully!");
+        router.push("/home");
+      }
     } catch (error) {
       console.error("Sign in error:", error);
-      setError(error.message);
     }
   };
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithGoogle();
-      router.push("/home");
+      setError("");
+      const user = await signInWithGoogle();
+      if (user) {
+        toast.success("Signed in with Google successfully!");
+        router.push("/home");
+      }
     } catch (error) {
       if (error.code !== "auth/cancelled-popup-request") {
         console.error("Google sign in error:", error);
-        setError(error.message);
       }
     }
   };

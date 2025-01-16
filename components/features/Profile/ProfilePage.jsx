@@ -60,16 +60,28 @@ const ProfilePage = () => {
 
         if (userSnapshot.exists()) {
           const userData = userSnapshot.data();
+          
+          // Handle the timestamp, which could be a Firestore timestamp or an ISO string
+          let createdAtDate;
+          if (userData.createdAt?.toDate) {
+            createdAtDate = userData.createdAt.toDate();
+          } else if (userData.createdAt) {
+            createdAtDate = new Date(userData.createdAt);
+          } else {
+            createdAtDate = new Date();
+          }
+
           setProfileData(prev => ({
             ...prev,
             basic: {
               displayName: userData.displayName || user.displayName || 'Anonymous',
               email: userData.email || user.email,
               photoURL: userData.photoURL || user.photoURL || '/download.png',
-              createdAt: userData.createdAt?.toDate() || new Date(),
+              createdAt: createdAtDate,
             }
           }));
         } else {
+          // Create new user profile if it doesn't exist
           const newUserData = {
             displayName: user.displayName || user.email.split('@')[0],
             email: user.email,
@@ -78,6 +90,7 @@ const ProfilePage = () => {
             updatedAt: serverTimestamp()
           };
           await setDoc(userDoc, newUserData);
+          
           setProfileData(prev => ({
             ...prev,
             basic: {
@@ -86,10 +99,13 @@ const ProfilePage = () => {
             }
           }));
         }
+
+        setLoading(false);
       } catch (err) {
         console.error('Error fetching user profile:', err);
         setError(err.message);
         toast.error('Failed to load profile data');
+        setLoading(false);
       }
     };
 

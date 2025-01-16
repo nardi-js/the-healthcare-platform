@@ -5,7 +5,7 @@ import { useAuth } from "@/context/useAuth";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { FaTag, FaTimes } from "react-icons/fa";
-import BaseModal from "./common/BaseModal";
+import Modal from "@/components/ui/modal";
 import FormField from "./common/FormField";
 import toast from "react-hot-toast";
 
@@ -55,7 +55,7 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess }) {
     });
   };
 
-  const handleTagToggle = (tag) => {
+  const handleTagClick = (tag) => {
     setFormData(prev => ({
       ...prev,
       tags: prev.tags.includes(tag)
@@ -64,7 +64,7 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess }) {
     }));
   };
 
-  const handleCustomTagAdd = () => {
+  const handleAddCustomTag = () => {
     const trimmedTag = customTag.trim();
     if (trimmedTag && trimmedTag.length <= 10 && !formData.tags.includes(trimmedTag)) {
       setFormData(prev => ({
@@ -75,6 +75,13 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess }) {
     } else if (trimmedTag.length > 10) {
       setError("Custom tag must be 10 characters or less");
     }
+  };
+
+  const handleRemoveTag = (tag) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(t => t !== tag)
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -140,141 +147,167 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess }) {
   };
 
   return (
-    <BaseModal
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Create New Post"
-      onSubmit={handleSubmit}
-      submitLabel={isSubmitting ? "Creating..." : "Create Post"}
-      loading={isSubmitting}
-      size="xl"
-    >
-      {error && (
-        <div className="mb-4 p-2 text-sm text-red-600 bg-red-100 dark:bg-red-900/30 rounded">
-          {error}
-        </div>
-      )}
-
-      <FormField
-        type="textarea"
-        name="content"
-        value={formData.content}
-        onChange={handleChange}
-        placeholder="What's on your mind?"
-        required
-      />
-
-      {/* Tags Section */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Tags
-        </label>
-        <div className="flex flex-wrap gap-2 mb-2">
-          {PREDEFINED_TAGS.map((tag) => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => handleTagToggle(tag)}
-              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                formData.tags.includes(tag)
-                  ? "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300"
-                  : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-              }`}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-2">
-          <FormField
-            type="text"
-            value={customTag}
-            onChange={(e) => {
-              setCustomTag(e.target.value);
-              setError("");
-            }}
-            placeholder="Custom tag (max 10 chars)"
-            maxLength={10}
-            className="flex-grow"
-          />
+      title="Create a Post"
+      footer={
+        <div className="flex justify-end space-x-2">
           <button
             type="button"
-            onClick={handleCustomTagAdd}
-            disabled={!customTag.trim()}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+            disabled={isSubmitting}
           >
-            Add
+            Cancel
+          </button>
+          <button
+            type="submit"
+            onClick={handleSubmit}
+            className="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Creating..." : "Create Post"}
           </button>
         </div>
-      </div>
+      }
+    >
+      <div className="space-y-4">
+        {error && (
+          <div className="p-3 text-sm text-red-500 bg-red-100 rounded">
+            {error}
+          </div>
+        )}
 
-      {/* Selected Tags */}
-      {formData.tags.length > 0 && (
-        <div className="mb-4">
-          <div className="flex flex-wrap gap-2">
-            {formData.tags.map((tag) => (
-              <span
+        <FormField
+          label="Content"
+          name="content"
+          type="textarea"
+          value={formData.content}
+          onChange={handleChange}
+          placeholder="Share your thoughts..."
+          required
+        />
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Tags
+          </label>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {PREDEFINED_TAGS.map((tag) => (
+              <button
                 key={tag}
-                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300"
+                type="button"
+                onClick={() => handleTagClick(tag)}
+                className={`px-3 py-1 rounded-full text-sm ${
+                  formData.tags.includes(tag)
+                    ? "bg-purple-100 text-purple-800"
+                    : "bg-gray-100 text-gray-800"
+                } hover:bg-purple-200`}
               >
-                <FaTag className="mr-1" />
                 {tag}
-                <button
-                  type="button"
-                  onClick={() => handleTagToggle(tag)}
-                  className="ml-1 hover:text-purple-900 dark:hover:text-purple-100"
-                >
-                  <FaTimes className="w-3 h-3" />
-                </button>
-              </span>
+              </button>
             ))}
           </div>
         </div>
-      )}
 
-      {/* Media Upload */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Add Media
-        </label>
-        <input
-          type="file"
-          accept="image/*,video/*"
-          onChange={handleMediaSelect}
-          multiple
-          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
-        />
-      </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Add Custom Tag
+          </label>
+          <div className="mt-1 flex rounded-md shadow-sm">
+            <input
+              type="text"
+              value={customTag}
+              onChange={(e) => setCustomTag(e.target.value)}
+              className="flex-1 min-w-0 block w-full px-3 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+              placeholder="Enter custom tag"
+            />
+            <button
+              type="button"
+              onClick={handleAddCustomTag}
+              className="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-md bg-gray-50 dark:bg-gray-600 text-gray-500 dark:text-gray-300 sm:text-sm"
+            >
+              Add
+            </button>
+          </div>
+        </div>
 
-      {/* Media Preview */}
-      {selectedMedia.length > 0 && (
-        <div className="mb-4 grid grid-cols-2 gap-2">
+        <div className="flex flex-wrap gap-2">
+          {formData.tags.map((tag) => (
+            <span
+              key={tag}
+              className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800"
+            >
+              <FaTag className="mr-1" />
+              {tag}
+              <button
+                type="button"
+                onClick={() => handleRemoveTag(tag)}
+                className="ml-1 text-purple-600 hover:text-purple-800"
+              >
+                <FaTimes />
+              </button>
+            </span>
+          ))}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Media (Optional)
+          </label>
+          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md">
+            <div className="space-y-1 text-center">
+              <div className="flex text-sm text-gray-600 dark:text-gray-400">
+                <label
+                  htmlFor="media-upload"
+                  className="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-purple-600 hover:text-purple-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-purple-500"
+                >
+                  <span>Upload media files</span>
+                  <input
+                    id="media-upload"
+                    type="file"
+                    className="sr-only"
+                    multiple
+                    accept="image/*,video/*"
+                    onChange={handleMediaSelect}
+                  />
+                </label>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                PNG, JPG, GIF up to 10MB
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
           {selectedMedia.map((media, index) => (
             <div key={index} className="relative">
               {media.type === "image" ? (
                 <img
                   src={media.preview}
-                  alt="Preview"
-                  className="w-full h-32 object-cover rounded"
+                  alt={`Preview ${index + 1}`}
+                  className="h-24 w-full object-cover rounded"
                 />
               ) : (
                 <video
                   src={media.preview}
-                  className="w-full h-32 object-cover rounded"
+                  className="h-24 w-full object-cover rounded"
                   controls
                 />
               )}
               <button
                 type="button"
                 onClick={() => handleMediaRemove(index)}
-                className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
               >
-                <FaTimes className="w-3 h-3" />
+                <FaTimes size={12} />
               </button>
             </div>
           ))}
         </div>
-      )}
-    </BaseModal>
+      </div>
+    </Modal>
   );
 }

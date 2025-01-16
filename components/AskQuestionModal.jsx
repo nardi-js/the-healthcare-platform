@@ -5,7 +5,7 @@ import { useAuth } from "@/context/useAuth";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import toast from "react-hot-toast";
-import BaseModal from "./common/BaseModal";
+import Modal from "@/components/ui/modal";
 import FormField from "./common/FormField";
 
 const categories = [
@@ -102,47 +102,77 @@ export default function AskQuestionModal({ isOpen, onClose, onSuccess }) {
   };
 
   return (
-    <BaseModal
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Ask a Question"
-      onSubmit={handleSubmit}
-      submitLabel={isSubmitting ? "Posting..." : "Post Question"}
-      loading={isSubmitting}
-      size="xl"
+      footer={
+        <div className="flex justify-end space-x-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+            disabled={isSubmitting}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            onClick={handleSubmit}
+            className="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Submitting..." : "Submit Question"}
+          </button>
+        </div>
+      }
     >
-      {error && (
-        <div className="mb-4 text-red-500 text-sm">{error}</div>
-      )}
+      <div className="space-y-4">
+        {error && (
+          <div className="p-3 text-sm text-red-500 bg-red-100 rounded">
+            {error}
+          </div>
+        )}
 
-      <FormField
-        label="Title"
-        name="title"
-        value={formData.title}
-        onChange={handleChange}
-        placeholder="What's your question?"
-        required
-      />
+        <FormField
+          label="Title"
+          name="title"
+          value={formData.title}
+          onChange={handleChange}
+          placeholder="What's your question?"
+          required
+        />
 
-      <FormField
-        type="select"
-        label="Category"
-        name="category"
-        value={formData.category}
-        onChange={handleChange}
-        options={categories}
-        required
-      />
+        <FormField
+          label="Description"
+          name="content"
+          type="textarea"
+          value={formData.content}
+          onChange={handleChange}
+          placeholder="Provide more details about your question..."
+          required
+        />
 
-      <FormField
-        type="textarea"
-        label="Question Details"
-        name="content"
-        value={formData.content}
-        onChange={handleChange}
-        placeholder="Provide more details about your question..."
-        required
-      />
-    </BaseModal>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Category
+          </label>
+          <select
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
+            required
+          >
+            <option value="">Select a category</option>
+            {categories.map((category) => (
+              <option key={category.value} value={category.value}>
+                {category.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+    </Modal>
   );
 }
