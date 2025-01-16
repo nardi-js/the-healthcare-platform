@@ -2,41 +2,30 @@
 
 import React, { useState, useEffect } from "react";
 import { FaThumbsUp, FaThumbsDown } from "react-icons/fa";
-import { doc, getDoc, setDoc, updateDoc, deleteDoc, increment, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/useAuth";
 import toast from "react-hot-toast";
 
 const VoteSystem = ({ postId, type = "posts" }) => {
   const { user } = useAuth();
-  const [likes, setLikes] = useState(0);
-  const [dislikes, setDislikes] = useState(0);
-  const [userVote, setUserVote] = useState(null); // 'like' or 'dislike' or null
+  const [likes, setLikes] = useState([]);
+  const [dislikes, setDislikes] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch post votes and user's vote
   useEffect(() => {
     const fetchVotes = async () => {
       if (!postId) return;
 
       try {
-        // Get post/question data for vote counts
         const docRef = doc(db, type, postId);
         const docSnap = await getDoc(docRef);
+        
         if (docSnap.exists()) {
-          setLikes(docSnap.data().likes || 0);
-          setDislikes(docSnap.data().dislikes || 0);
-        }
-
-        // Get user's vote if logged in
-        if (user?.uid) {
-          const voteRef = doc(db, `${type}_votes`, `${postId}_${user.uid}`);
-          const voteDoc = await getDoc(voteRef);
-          if (voteDoc.exists()) {
-            setUserVote(voteDoc.data().type);
-          } else {
-            setUserVote(null);
-          }
+          const data = docSnap.data();
+          // Ensure likes and dislikes are always arrays
+          setLikes(Array.isArray(data.likes) ? data.likes : []);
+          setDislikes(Array.isArray(data.dislikes) ? data.dislikes : []);
         }
       } catch (error) {
         console.error("Error fetching votes:", error);
@@ -44,10 +33,10 @@ const VoteSystem = ({ postId, type = "posts" }) => {
     };
 
     fetchVotes();
-  }, [postId, user?.uid, type]);
+  }, [postId, type]);
 
   const handleVote = async (voteType) => {
-    if (!user?.uid) {
+    if (!user) {
       toast.error("Please log in to vote");
       return;
     }
@@ -56,56 +45,59 @@ const VoteSystem = ({ postId, type = "posts" }) => {
 
     try {
       setLoading(true);
-      const voteRef = doc(db, `${type}_votes`, `${postId}_${user.uid}`);
       const docRef = doc(db, type, postId);
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
+        toast.error("Post not found");
+        return;
+      }
 
-      const voteDoc = await getDoc(voteRef);
-      const currentVote = voteDoc.exists() ? voteDoc.data().type : null;
+      const currentData = docSnap.data();
+      const userLiked = Array.isArray(currentData.likes) && currentData.likes.includes(user.uid);
+      const userDisliked = Array.isArray(currentData.dislikes) && currentData.dislikes.includes(user.uid);
 
-      // If clicking the same vote type, remove the vote
-      if (currentVote === voteType) {
-        await deleteDoc(voteRef);
-        await updateDoc(docRef, {
-          [voteType === 'like' ? 'likes' : 'dislikes']: increment(-1)
-        });
-        setUserVote(null);
-        if (voteType === 'like') {
-          setLikes(prev => prev - 1);
+      if (voteType === 'like') {
+        if (userLiked) {
+          // Remove like
+          await updateDoc(docRef, {
+            likes: arrayRemove(user.uid)
+          });
+          setLikes(prev => prev.filter(id => id !== user.uid));
         } else {
-          setDislikes(prev => prev - 1);
-        }
-      } else {
-        // If changing vote type or adding new vote
-        const updates = {};
-        
-        // If user had a previous vote, remove it first
-        if (currentVote) {
-          updates[currentVote === 'like' ? 'likes' : 'dislikes'] = increment(-1);
-          if (currentVote === 'like') {
-            setLikes(prev => prev - 1);
-          } else {
-            setDislikes(prev => prev - 1);
+          // Add like and remove dislike if exists
+          const updates = {
+            likes: arrayUnion(user.uid)
+          };
+          if (userDisliked) {
+            updates.dislikes = arrayRemove(user.uid);
+          }
+          await updateDoc(docRef, updates);
+          setLikes(prev => [...prev, user.uid]);
+          if (userDisliked) {
+            setDislikes(prev => prev.filter(id => id !== user.uid));
           }
         }
-
-        // Add the new vote
-        updates[voteType === 'like' ? 'likes' : 'dislikes'] = increment(1);
-        await updateDoc(docRef, updates);
-
-        // Save the vote record
-        await setDoc(voteRef, {
-          type: voteType,
-          userId: user.uid,
-          itemId: postId,
-          itemType: type,
-          timestamp: serverTimestamp()
-        });
-
-        setUserVote(voteType);
-        if (voteType === 'like') {
-          setLikes(prev => prev + 1);
+      } else {
+        if (userDisliked) {
+          // Remove dislike
+          await updateDoc(docRef, {
+            dislikes: arrayRemove(user.uid)
+          });
+          setDislikes(prev => prev.filter(id => id !== user.uid));
         } else {
-          setDislikes(prev => prev + 1);
+          // Add dislike and remove like if exists
+          const updates = {
+            dislikes: arrayUnion(user.uid)
+          };
+          if (userLiked) {
+            updates.likes = arrayRemove(user.uid);
+          }
+          await updateDoc(docRef, updates);
+          setDislikes(prev => [...prev, user.uid]);
+          if (userLiked) {
+            setLikes(prev => prev.filter(id => id !== user.uid));
+          }
         }
       }
     } catch (error) {
@@ -122,25 +114,25 @@ const VoteSystem = ({ postId, type = "posts" }) => {
         onClick={() => handleVote('like')}
         disabled={loading}
         className={`flex items-center space-x-1 ${
-          userVote === 'like'
+          user && likes.includes(user.uid)
             ? 'text-purple-600 dark:text-purple-400'
             : 'text-gray-500 dark:text-gray-400'
         } hover:text-purple-600 dark:hover:text-purple-400 disabled:opacity-50`}
       >
         <FaThumbsUp className="w-4 h-4" />
-        <span>{likes}</span>
+        <span>{likes.length}</span>
       </button>
       <button
         onClick={() => handleVote('dislike')}
         disabled={loading}
         className={`flex items-center space-x-1 ${
-          userVote === 'dislike'
+          user && dislikes.includes(user.uid)
             ? 'text-purple-600 dark:text-purple-400'
             : 'text-gray-500 dark:text-gray-400'
         } hover:text-purple-600 dark:hover:text-purple-400 disabled:opacity-50`}
       >
         <FaThumbsDown className="w-4 h-4" />
-        <span>{dislikes}</span>
+        <span>{dislikes.length}</span>
       </button>
     </div>
   );

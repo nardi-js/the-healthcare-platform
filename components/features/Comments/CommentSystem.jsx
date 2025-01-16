@@ -3,7 +3,22 @@
 import { useState, useCallback } from 'react';
 import { FaSort } from 'react-icons/fa';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, deleteDoc, updateDoc, serverTimestamp, arrayUnion, arrayRemove, query, orderBy, limit, startAfter, getDocs, doc } from 'firebase/firestore';
+import { 
+  collection, 
+  addDoc, 
+  deleteDoc, 
+  updateDoc, 
+  serverTimestamp, 
+  arrayUnion, 
+  arrayRemove, 
+  query, 
+  orderBy, 
+  limit, 
+  startAfter, 
+  getDocs, 
+  doc,
+  increment
+} from 'firebase/firestore';
 import { useAuth } from '@/context/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'react-hot-toast';
@@ -67,7 +82,15 @@ const CommentSystem = ({ type, itemId, comments = [], onCommentUpdate }) => {
         likes: []
       };
 
+      // Add the comment
       await addDoc(collection(db, `${type}s/${itemId}/comments`), commentData);
+
+      // Update the parent document's comment count
+      const parentDocRef = doc(db, `${type}s`, itemId);
+      await updateDoc(parentDocRef, {
+        commentCount: increment(1)
+      });
+
       toast.success('Comment added successfully');
       if (onCommentUpdate) onCommentUpdate();
     } catch (error) {
@@ -99,7 +122,15 @@ const CommentSystem = ({ type, itemId, comments = [], onCommentUpdate }) => {
         }
       };
 
+      // Add the reply
       await addDoc(collection(db, `${type}s/${itemId}/comments`), commentData);
+
+      // Update the parent document's comment count
+      const parentDocRef = doc(db, `${type}s`, itemId);
+      await updateDoc(parentDocRef, {
+        commentCount: increment(1)
+      });
+
       toast.success('Reply added successfully');
       if (onCommentUpdate) onCommentUpdate();
     } catch (error) {
@@ -112,7 +143,15 @@ const CommentSystem = ({ type, itemId, comments = [], onCommentUpdate }) => {
 
   const handleDelete = async (commentId) => {
     try {
+      // Delete the comment
       await deleteDoc(doc(db, `${type}s/${itemId}/comments`, commentId));
+
+      // Update the parent document's comment count
+      const parentDocRef = doc(db, `${type}s`, itemId);
+      await updateDoc(parentDocRef, {
+        commentCount: increment(-1)
+      });
+
       toast.success('Comment deleted successfully');
       if (onCommentUpdate) onCommentUpdate();
     } catch (error) {

@@ -6,9 +6,29 @@ import { useRouter } from "next/navigation";
 import { FaEye, FaThumbsUp, FaComment, FaShare, FaUser } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
 import Username from "./Username";
+import { useState, useEffect } from "react";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
-export default function PostCard({ post }) {
+export default function PostCard({ post: initialPost }) {
   const router = useRouter();
+  const [post, setPost] = useState(initialPost);
+
+  useEffect(() => {
+    // Subscribe to real-time updates for the post
+    const unsubscribe = onSnapshot(doc(db, "posts", initialPost.id), (doc) => {
+      if (doc.exists()) {
+        setPost({
+          ...initialPost,
+          ...doc.data(),
+          id: doc.id,
+          createdAt: doc.data().createdAt?.toDate() || initialPost.createdAt
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, [initialPost.id]);
 
   const handlePostClick = () => {
     router.push(`/post/${post.id}`);
@@ -76,7 +96,7 @@ export default function PostCard({ post }) {
         </div>
         <div className="flex items-center space-x-1">
           <FaThumbsUp className="w-4 h-4" />
-          <span>{post.upvotes || 0}</span>
+          <span>{post.likes?.length || post.upvotes || 0}</span>
         </div>
         <div className="flex items-center space-x-1">
           <FaComment className="w-4 h-4" />

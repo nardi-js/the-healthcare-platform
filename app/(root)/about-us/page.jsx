@@ -4,37 +4,39 @@ import Image from "next/image";
 import AbdulkareemImage from "@/public/Abdulkareem.jpg";
 import Safiullah from "@/public/Safiullah.jpg";
 import kamal from "@/public/kamal.jpg";
+import huthyfa from "@/public/Huthyfa.jpg";
+import nardi from "@/public/nardi.jpg";
 
 const AboutUs = () => {
   const teamMembers = [
     {
       name: "Nardi",
-      role: "Team Lead & Full Stack Developer",
-      email: "ahmad@healthcare-platform.com",
-      image: AbdulkareemImage,
+      role: "Project Manager & Full Stack Developer",
+      email: "nardi@healthcare-platform.com",
+      image: nardi,
     },
     {
-      name: "Sarah Rahman",
-      role: "UI/UX Designer",
-      email: "sarah@healthcare-platform.com",
-      image: "/team/member2.jpg",
+      name: "Huthayfa Derham",
+      role: "UI/Frontend Developer",
+      email: "Huthayfa.Derham@healthcare-platform.com",
+      image: huthyfa,
     },
     {
       name: "Abdul Rahman Bin Mohd Kamal",
-      role: "Backend Developer",
-      email: "mohammed@healthcare-platform.com",
+      role: "Full-Stack Developer",
+      email: "abdul.kamal@healthcare-platform.com",
       image: kamal,
     },
     {
       name: "Safiullah Yousufzai",
-      role: "Frontend Developer",
-      email: "fatima@healthcare-platform.com",
+      role: "Process Designer",
+      email: "safiullah.yousufzai@healthcare-platform.com",
       image: Safiullah,
     },
     {
       name: "ABDULKAREEM SALEM BA WAZIR",
-      role: "Quality Assurance Engineer",
-      email: "yusuf@healthcare-platform.com",
+      role: "Project Planner",
+      email: "abulkareeem.wazir@healthcare-platform.com",
       image: AbdulkareemImage,
     },
   ];
@@ -125,7 +127,7 @@ const AboutUs = () => {
               key={index}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105"
             >
-              <div className="relative h-64 w-full">
+              <div className="relative h-80 w-full ">
                 <Image
                   src={member.image}
                   alt={member.name}
@@ -134,10 +136,12 @@ const AboutUs = () => {
                 />
               </div>
               <div className="p-6 text-center">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                   {member.name}
-                </h3>
-
+                </h1>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  {member.role}
+                </h2>
                 <a
                   href={'mailto:${member.email}'}
                   className="inline-block text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
