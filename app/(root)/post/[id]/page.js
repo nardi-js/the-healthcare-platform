@@ -10,7 +10,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import VoteSystem from '@/components/VoteSystem';
-import CommentSystem from '@/components/common/CommentSystem';
+import CommentSystem from '@/components/features/Comments';
 import { recordPostView } from '@/lib/utils/postViews';
 import Username from '@/components/Username'; // Import the Username component
 

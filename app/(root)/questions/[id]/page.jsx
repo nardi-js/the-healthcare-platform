@@ -8,7 +8,7 @@ import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import { FaClock, FaEye, FaTags, FaUser } from "react-icons/fa";
 import VoteSystem from "@/components/VoteSystem";
-import CommentSystem from "@/components/common/CommentSystem";
+import CommentSystem from "@/components/features/Comments";
 import Username from '@/components/Username';
 
 export default function QuestionDetailsPage() {
