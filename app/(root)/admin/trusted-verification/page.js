@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import TrustedUserVerification from "@/components/TrustedUserVerification";
+import TrustedUserVerification from "@/components/features/TrustedUsers/TrustedUserVerification";
 
 export default function TrustedVerificationPage() {
   const { user } = useAuth();

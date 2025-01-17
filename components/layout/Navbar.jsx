@@ -5,8 +5,8 @@ import Image from "next/image";
 import { FaBars, FaSearch } from "react-icons/fa";
 import { useAuth } from "@/context/useAuth";
 import { useSidebar } from "@/context/SidebarContext";
-import UserMenu from "./UserMenu";
-import ThemeToggle from "./ThemeToggle";
+import UserMenu from "@/components/features/Auth/UserMenu";
+import ThemeToggle from "@/components/shared/ThemeToggle";
 
 export default function Navbar() {
   const { user } = useAuth();

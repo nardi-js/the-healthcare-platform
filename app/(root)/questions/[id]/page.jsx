@@ -7,9 +7,10 @@ import { doc, getDoc, updateDoc, increment, collection, query, orderBy, getDocs,
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import { FaClock, FaEye, FaTags, FaUser } from "react-icons/fa";
-import VoteSystem from "@/components/VoteSystem";
-import CommentSystem from "@/components/features/Comments";
-import Username from '@/components/Username';
+import VoteSystem from "@/components/shared/VoteSystem";
+import CommentSystem from "@/components/features/Comments/CommentSystem";
+import Username from "@/components/shared/Username";
+import { recordQuestionView } from "@/lib/utils/views";
 
 export default function QuestionDetailsPage() {
   const params = useParams();

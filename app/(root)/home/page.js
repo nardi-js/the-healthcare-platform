@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
-import QuestionCard from "@/components/QuestionCard";
-import PostCard from "@/components/PostCard";
+import { QuestionCard } from "@/components/features/Questions";
+import { PostCard } from "@/components/features/Posts";
 import { FaPlus } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/useAuth';

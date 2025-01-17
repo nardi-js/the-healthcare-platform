@@ -129,37 +129,55 @@ const SignUp = () => {
     try {
       setError("");
       setLoading(true);
+      
       const result = await signInWithGoogle();
-      const user = result.user;
+      console.log("Google sign in result:", result);
 
-      try {
-        // Create user profile
-        await setDoc(doc(db, "users", user.uid), {
-          username: user.email.split('@')[0],
-          email: user.email,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          displayName: user.displayName || user.email.split('@')[0],
-          photoURL: user.photoURL,
-          bio: "",
-          specialty: "",
-          location: "",
-          contactInformation: {},
-          professionalCredentials: []
-        }, { merge: true });
-
-        toast.success("Signed in with Google successfully!");
-        router.push("/profile");
-      } catch (firestoreError) {
-        console.error("Firestore error:", firestoreError);
-        // If Firestore fails but auth succeeds, we can still let them in
-        toast.success("Signed in! Some profile features may be limited until you're back online.");
-        router.push("/profile");
+      if (!result) {
+        console.log("No result from Google sign in");
+        return;
       }
+
+      if (!result.user) {
+        console.error("No user object in result");
+        throw new Error("Failed to get user information from Google");
+      }
+
+      const { user } = result;
+      console.log("User object:", user);
+
+      if (!user.uid) {
+        console.error("No UID in user object");
+        throw new Error("Failed to get user ID from Google");
+      }
+
+      // Create user profile
+      const userData = {
+        username: user.email?.split('@')[0] || 'user',
+        email: user.email || '',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        displayName: user.displayName || user.email?.split('@')[0] || 'user',
+        photoURL: user.photoURL || null,
+        bio: "",
+        specialty: "",
+        location: "",
+        contactInformation: {},
+        professionalCredentials: []
+      };
+
+      console.log("Creating user profile with data:", userData);
+      await setDoc(doc(db, "users", user.uid), userData, { merge: true });
+
+      toast.success("Signed in with Google successfully!");
+      router.push("/home");
     } catch (error) {
       console.error("Google sign up error:", error);
-      setError(error.message);
-      toast.error(error.message);
+      if (error.code !== "auth/cancelled-popup-request") {
+        const errorMessage = error.message || "Failed to sign in with Google";
+        setError(errorMessage);
+        toast.error(errorMessage);
+      }
     } finally {
       setLoading(false);
     }

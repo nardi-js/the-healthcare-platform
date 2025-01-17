@@ -4,7 +4,7 @@ import { useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { FaReply, FaTrash, FaEdit, FaHeart, FaRegHeart, FaEllipsisH, FaUserCircle } from 'react-icons/fa';
 import Image from 'next/image';
-import Username from '@/components/Username';
+import { Username } from '@/components/shared';
 
 /**
  * Comment component displays a single comment with user information, content, and interaction buttons

@@ -152,13 +152,18 @@ const useProvideAuth = () => {
     try {
       setError(null);
       setLoading(true);
-      const response = await signInWithPopup(auth, googleProvider);
-      return response.user;
-    } catch (error) {
-      if (error.code !== 'auth/popup-closed-by-user') {
-        setError(error.message);
+      const result = await signInWithPopup(auth, googleProvider);
+      if (!result?.user) {
+        throw new Error("Failed to get user information from Google");
       }
-      throw error;
+      return result;
+    } catch (error) {
+      console.error("Google sign in error:", error);
+      if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
+        const errorMessage = getFirebaseErrorMessage(error);
+        setError(errorMessage);
+      }
+      return null;
     } finally {
       setLoading(false);
     }

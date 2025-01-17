@@ -7,8 +7,8 @@ import { QuestionsProvider } from "@/context/QuestionsContext";
 import { Toaster } from "react-hot-toast";
 import { useEffect } from "react";
 import { initializeFirestore } from "@/lib/initFirestore";
-import Navbar from "@/components/Navbar";
-import Sidebar from "@/components/Sidebar";
+import Navbar from "@/components/layout/Navbar";
+import Sidebar from "@/components/layout/Sidebar";
 
 export default function ClientProviders({ children }) {
   // Initialize Firestore collections

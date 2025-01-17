@@ -3,7 +3,7 @@
 import { useAuth } from "@/context/useAuth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import TrustedUserApplication from "@/components/TrustedUserApplication";
+import { TrustedUserApplication } from "@/components/features/TrustedUsers";
 
 export default function TrustedApplicationPage() {
   const { user, loading } = useAuth();

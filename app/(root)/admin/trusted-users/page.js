@@ -110,17 +110,17 @@ export default function TrustedUsersPage() {
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 flex items-center justify-between"
               >
                 <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center overflow-hidden">
                     {trustedUser.photoURL ? (
                       <Image
                         src={trustedUser.photoURL}
-                        alt={trustedUser.username}
+                        alt={`Profile picture of ${trustedUser.username || trustedUser.email || 'user'}`}
                         width={40}
                         height={40}
-                        className="rounded-full"
+                        className="rounded-full object-cover"
                       />
                     ) : (
-                      <FaUserShield className="text-purple-600 dark:text-purple-400" />
+                      <FaUserShield className="text-purple-600 dark:text-purple-400 w-5 h-5" />
                     )}
                   </div>
                   <div>

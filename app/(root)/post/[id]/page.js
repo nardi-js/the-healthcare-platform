@@ -9,10 +9,9 @@ import { FaThumbsUp, FaThumbsDown, FaComment, FaShare, FaEye, FaFlag, FaUser, Fa
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
-import VoteSystem from '@/components/VoteSystem';
+import { VoteSystem, Username } from '@/components/shared';
 import CommentSystem from '@/components/features/Comments';
-import { recordPostView } from '@/lib/utils/postViews';
-import Username from '@/components/Username'; // Import the Username component
+import { recordPostView } from '@/lib/utils/views';
 
 export default function PostPage() {
   const params = useParams();

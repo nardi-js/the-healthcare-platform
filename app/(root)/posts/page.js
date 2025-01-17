@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import PostCard from "@/components/PostCard";
-import CreatePostModal from "@/components/CreatePostModal";
+import { PostCard, CreatePostModal } from "@/components/features/Posts";
 import { db } from "@/lib/firebase";
 import {
   collection,

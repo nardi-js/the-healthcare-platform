@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaEye, FaThumbsUp, FaComment, FaShare, FaUser } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
-import Username from "./Username";
+import { Username } from "@/components/shared";
 import { useState, useEffect } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -41,17 +41,21 @@ export default function PostCard({ post: initialPost }) {
     >
       {/* Author Info */}
       <div className="flex items-center space-x-3 mb-4">
-        <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white font-semibold">
+        <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center overflow-hidden">
           {post.author?.photoURL ? (
             <Image
               src={post.author.photoURL}
-              alt={post.author.name}
+              alt={`Profile picture of ${post.author?.name || post.author?.email || 'user'}`}
               width={32}
               height={32}
-              className="rounded-full"
+              className="rounded-full object-cover"
             />
           ) : (
-            <FaUser className="text-purple-600 dark:text-purple-400" />
+            <div className="w-full h-full flex items-center justify-center bg-purple-200 dark:bg-purple-800">
+              <span className="text-sm font-semibold text-purple-700 dark:text-purple-300">
+                {(post.author?.name?.[0] || post.author?.email?.[0] || '?').toUpperCase()}
+              </span>
+            </div>
           )}
         </div>
         <div>

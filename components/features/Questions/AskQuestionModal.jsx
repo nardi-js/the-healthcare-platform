@@ -6,7 +6,7 @@ import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import toast from "react-hot-toast";
 import Modal from "@/components/ui/modal";
-import FormField from "./common/FormField";
+import FormField from "@/components/common/FormField";
 
 const categories = [
   { value: "General Medicine", label: "General Medicine" },
@@ -70,8 +70,9 @@ export default function AskQuestionModal({ isOpen, onClose, onSuccess }) {
         authorId: user.uid,
         author: {
           id: user.uid,
-          name: user.displayName || "Anonymous",
-          avatar: user.photoURL || "/default-avatar.png",
+          name: user.displayName || user.email?.split('@')[0] || 'Anonymous',
+          email: user.email,
+          photoURL: user.photoURL || null,
         },
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),

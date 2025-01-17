@@ -5,10 +5,10 @@ import '@/public/styles/Post.css'; // Importing styles for Post
 import { useAuth } from "@/context/useAuth";
 import { FaFileAlt, FaPlayCircle, FaExpand } from "react-icons/fa";
 import Link from 'next/link';
+import Image from 'next/image';
 
-import VoteSystem from "./VoteSystem";
+import { VoteSystem, ShareSystem } from "@/components/shared";
 import CommentSystem from "@/components/features/Comments";
-import ShareSystem from "./ShareSystem";
 
 const Post = ({
   id,
@@ -88,11 +88,23 @@ const Post = ({
       {/* Post Header */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-3">
-          <img
-            src={author.avatar}
-            alt={author.name}
-            className="w-10 h-10 rounded-full"
-          />
+          <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center overflow-hidden">
+            {author?.photoURL ? (
+              <Image
+                src={author.photoURL}
+                alt={`Profile picture of ${author.username || author.email || 'user'}`}
+                width={40}
+                height={40}
+                className="rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-purple-200 dark:bg-purple-800">
+                <span className="text-xl font-semibold text-purple-700 dark:text-purple-300">
+                  {(author?.username?.[0] || author?.email?.[0] || '?').toUpperCase()}
+                </span>
+              </div>
+            )}
+          </div>
           <div>
             <h3 className="font-semibold text-gray-900 dark:text-gray-100">
               <Link href={`/users/${author.id}`}>

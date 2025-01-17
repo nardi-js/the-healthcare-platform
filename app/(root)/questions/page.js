@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, query, orderBy, limit, getDocs, startAfter } from "firebase/firestore";
-import Question from "@/components/Question";
-import AskQuestionModal from "@/components/AskQuestionModal";
+import { QuestionCard, AskQuestionModal } from "@/components/features/Questions";
 import { FaPlus, FaSearch, FaFilter, FaTags, FaSort, FaCalendar } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { Geist } from "next/font/google";
@@ -300,7 +299,7 @@ export default function QuestionsPage() {
       {/* Questions List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {questions.map((question) => (
-          <Question key={question.id} {...question} />
+          <QuestionCard key={question.id} question={question} />
         ))}
         {questions.length === 0 && !loading && (
           <div className="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
