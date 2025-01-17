@@ -67,10 +67,6 @@ export default function HomePage() {
     fetchTrendingContent();
   }, []);
 
-  const handleNewQuestion = () => {
-    router.push('/ask');
-  };
-
   return (
     <div className="min-h-screen">
       {/* Description Section */}
