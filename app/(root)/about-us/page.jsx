@@ -11,7 +11,7 @@ const AboutUs = () => {
     {
       name: "Nardi",
       role: "Team Lead & Full Stack Developer",
-      email: "ahmad@healthcare-platform.com",
+      email: "nardi@healthcare-platform.com",
       image: "/team/member1.jpg",
     },
     {
