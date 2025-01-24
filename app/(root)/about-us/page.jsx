@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import AbdulkareemImage from "@/public/Abdulkareem.jpg";
+import Huthayfa from "@/public/Huthayfa.jpg";
 import Safiullah from "@/public/Safiullah.jpg";
 import kamal from "@/public/kamal.jpg";
 
@@ -11,13 +12,13 @@ const AboutUs = () => {
       name: "Nardi",
       role: "Team Lead & Full Stack Developer",
       email: "ahmad@healthcare-platform.com",
-      image: AbdulkareemImage,
+      image: "/team/member1.jpg",
     },
     {
-      name: "Sarah Rahman",
+      name: "Huthayfa Derham",
       role: "UI/UX Designer",
-      email: "sarah@healthcare-platform.com",
-      image: "/team/member2.jpg",
+      email: "Huthayfa@healthcare-platform.com",
+      image: Huthayfa,
     },
     {
       name: "Abdul Rahman Bin Mohd Kamal",
@@ -39,13 +40,6 @@ const AboutUs = () => {
     },
   ];
 
-  const statistics = [
-    { number: "1M+", label: "Users Helped" },
-    { number: "50K+", label: "Healthcare Professionals" },
-    { number: "100K+", label: "Questions Answered" },
-    { number: "98%", label: "User Satisfaction" },
-  ];
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Hero Section */}
@@ -54,12 +48,12 @@ const AboutUs = () => {
           Revolutionizing Healthcare Access
         </h1>
         <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed">
-          The Healthcare Platform is where innovation meets compassion. We're transforming 
-          the way healthcare information is shared and accessed, creating a bridge between 
-          healthcare professionals and those seeking reliable medical guidance.
+          The Healthcare Platform is where innovation meets compassion. We're
+          transforming the way healthcare information is shared and accessed,
+          creating a bridge between healthcare professionals and those seeking
+          reliable medical guidance.
         </p>
       </div>
-
 
       {/* Mission Statement */}
       <div className="mb-20">
@@ -68,9 +62,10 @@ const AboutUs = () => {
         </h2>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg">
           <p className="text-xl text-gray-600 dark:text-gray-300 text-center leading-relaxed">
-            To democratize healthcare knowledge by creating a trusted platform where expertise 
-            meets accessibility. We believe that quality healthcare information should be 
-            available to everyone, regardless of their location or circumstances.
+            To democratize healthcare knowledge by creating a trusted platform
+            where expertise meets accessibility. We believe that quality
+            healthcare information should be available to everyone, regardless
+            of their location or circumstances.
           </p>
         </div>
       </div>
@@ -82,33 +77,39 @@ const AboutUs = () => {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
-            <div className="text-purple-600 dark:text-purple-400 text-4xl mb-4">🌍</div>
+            <div className="text-purple-600 dark:text-purple-400 text-4xl mb-4">
+              🌍
+            </div>
             <h3 className="text-xl font-semibold mb-4 text-purple-600 dark:text-purple-400">
               Global Access
             </h3>
             <p className="text-gray-600 dark:text-gray-300">
-              Breaking down geographical barriers to make quality healthcare information 
-              available worldwide, 24/7.
+              Breaking down geographical barriers to make quality healthcare
+              information available worldwide, 24/7.
             </p>
           </div>
           <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
-            <div className="text-purple-600 dark:text-purple-400 text-4xl mb-4">👥</div>
+            <div className="text-purple-600 dark:text-purple-400 text-4xl mb-4">
+              👥
+            </div>
             <h3 className="text-xl font-semibold mb-4 text-purple-600 dark:text-purple-400">
               Community-Driven
             </h3>
             <p className="text-gray-600 dark:text-gray-300">
-              Fostering a supportive ecosystem where healthcare professionals and patients 
-              collaborate for better health outcomes.
+              Fostering a supportive ecosystem where healthcare professionals
+              and patients collaborate for better health outcomes.
             </p>
           </div>
           <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
-            <div className="text-purple-600 dark:text-purple-400 text-4xl mb-4">💡</div>
+            <div className="text-purple-600 dark:text-purple-400 text-4xl mb-4">
+              💡
+            </div>
             <h3 className="text-xl font-semibold mb-4 text-purple-600 dark:text-purple-400">
               Innovation
             </h3>
             <p className="text-gray-600 dark:text-gray-300">
-              Continuously evolving our platform with cutting-edge technology to enhance 
-              healthcare communication and education.
+              Continuously evolving our platform with cutting-edge technology to
+              enhance healthcare communication and education.
             </p>
           </div>
         </div>
@@ -139,7 +140,7 @@ const AboutUs = () => {
                 </h3>
 
                 <a
-                  href={'mailto:${member.email}'}
+                  href={"mailto:${member.email}"}
                   className="inline-block text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                 >
                   {member.email}
@@ -150,6 +151,6 @@ const AboutUs = () => {
         </div>
       </div>
     </div>
-  )
+  );
 };
 export default AboutUs;
