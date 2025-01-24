@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, updateDoc, increment, collection, query, orderBy, getDocs, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, updateDoc, increment, collection, query, orderBy, getDocs, onSnapshot, addDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import { FaClock, FaEye, FaTags, FaUser } from "react-icons/fa";
@@ -11,6 +11,7 @@ import VoteSystem from "@/components/shared/VoteSystem";
 import CommentSystem from "@/components/features/Comments/CommentSystem";
 import Username from "@/components/shared/Username";
 import { recordQuestionView } from "@/lib/utils/views";
+import { toast } from 'react-toastify';
 
 export default function QuestionDetailsPage() {
   const params = useParams();
@@ -19,6 +20,9 @@ export default function QuestionDetailsPage() {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showComments, setShowComments] = useState(false);
+  const [answerContent, setAnswerContent] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const user = null; // Assuming you have a way to get the current user
 
   // Add real-time listener for the question document
   useEffect(() => {
@@ -101,6 +105,100 @@ export default function QuestionDetailsPage() {
 
     incrementViewCount();
   }, [params.id]);
+
+  const handleAnswer = async (e) => {
+    e.preventDefault();
+    
+    if (!user) {
+      toast.error('Please sign in to add an answer');
+      return;
+    }
+
+    if (!answerContent.trim()) {
+      toast.error('Answer cannot be empty');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const answerRef = await addDoc(collection(db, 'questions', params.id, 'answers'), {
+        content: answerContent,
+        authorId: user.uid,
+        author: {
+          name: user.displayName || 'Anonymous',
+          image: user.photoURL || null,
+        },
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        votes: 0,
+      });
+
+      setAnswerContent('');
+      toast.success('Answer posted successfully!');
+      
+      // Refresh answers
+      const fetchAnswers = async () => {
+        if (!params.id) return;
+
+        try {
+          const answersQuery = query(
+            collection(db, "questions", params.id, "answers"),
+            orderBy("createdAt", "desc")
+          );
+          const answersSnapshot = await getDocs(answersQuery);
+          const answersData = answersSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            createdAt: doc.data().createdAt?.toDate() || new Date(),
+          }));
+          setAnswers(answersData);
+        } catch (error) {
+          console.error("Error fetching answers:", error);
+        }
+      };
+
+      fetchAnswers();
+    } catch (error) {
+      console.error('Error adding answer:', error);
+      toast.error('Failed to post answer. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVote = async (type) => {
+    if (!user) {
+      toast.error('Please sign in to vote');
+      return;
+    }
+
+    try {
+      // Vote logic here
+      const voteRef = doc(db, 'questions', params.id, 'votes', user.uid);
+      const voteDoc = await getDoc(voteRef);
+      
+      if (voteDoc.exists()) {
+        toast.error('You have already voted on this question');
+        return;
+      }
+
+      await setDoc(voteRef, {
+        type,
+        userId: user.uid,
+        createdAt: serverTimestamp()
+      });
+
+      // Update question vote count
+      await updateDoc(doc(db, 'questions', params.id), {
+        [`${type}s`]: increment(1)
+      });
+
+      toast.success('Vote recorded successfully!');
+    } catch (error) {
+      console.error('Error voting:', error);
+      toast.error('Failed to record vote. Please try again.');
+    }
+  };
 
   if (loading) {
     return (
@@ -190,7 +288,7 @@ export default function QuestionDetailsPage() {
           </div>
 
           {/* Vote System */}
-          <VoteSystem postId={params.id} type="questions" />
+          <VoteSystem postId={params.id} type="questions" handleVote={handleVote} />
         </div>
 
         {/* Question Content */}

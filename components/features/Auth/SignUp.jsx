@@ -75,7 +75,7 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!loading && !validateForm()) return;
+    if (!validateForm()) return;
 
     const { username, email, password } = formData;
     setLoading(true);
@@ -91,30 +91,43 @@ const SignUp = () => {
       const user = await signup(email, password, username);
       
       try {
-        // Create user profile in Firestore
+        // Create user profile in Firestore with all necessary fields
         await setDoc(doc(db, "users", user.uid), {
           username,
           email: user.email,
+          displayName: username,
+          photoURL: null,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
-          // Set isAdmin if email matches admin email
+          stats: {
+            totalPosts: 0,
+            totalQuestions: 0,
+            totalAnswers: 0,
+            totalComments: 0
+          },
           isAdmin: user.email === "abdulrahman1stu141@gmail.com"
         });
 
         // Create username document
-        await setDoc(doc(db, "usernames", username), {
+        await setDoc(doc(db, "usernames", username.toLowerCase()), {
           userId: user.uid,
           email: user.email,
-          createdAt: serverTimestamp(),
+          createdAt: serverTimestamp()
         });
 
         toast.success("Account created successfully! Redirecting...");
-        router.push("/");
+        router.push("/home");
       } catch (firestoreError) {
         console.error("Firestore error:", firestoreError);
-        // If Firestore fails, we should still let the user know they can sign in
-        toast.error("Account created but profile setup incomplete. You can still sign in.");
-        router.push("/sign-in");
+        
+        if (firestoreError.code === 'permission-denied') {
+          toast.error("Permission denied. Please try signing in again.");
+          router.push("/sign-in");
+        } else {
+          // For other errors, let them proceed but notify
+          toast.error("Account created but profile setup incomplete. Please complete your profile later.");
+          router.push("/home");
+        }
       }
     } catch (error) {
       console.error("Signup error:", error);

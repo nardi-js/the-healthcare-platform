@@ -24,12 +24,15 @@ export default function PostPage() {
   const [comment, setComment] = useState('');
   const [showComments, setShowComments] = useState(false);
   const [viewCount, setViewCount] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [actionError, setActionError] = useState(null);
 
   const fetchPost = useCallback(async () => {
     if (!id) return;
     
     try {
       setLoading(true);
+      setError(null);
       const postDoc = await getDoc(doc(db, 'posts', id));
       
       if (!postDoc.exists()) {
@@ -58,31 +61,65 @@ export default function PostPage() {
       setPost(formattedPost);
       setViewCount(formattedPost.views);
 
-      // Fetch comments
-      const commentsQuery = query(
-        collection(db, 'posts', id, 'comments'),
-        orderBy('createdAt', 'desc')
-      );
-      const commentsSnapshot = await getDocs(commentsQuery);
-      const commentsList = commentsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-      }));
-      setComments(commentsList);
-
-      // Record the view
-      await recordPostView(id, user?.uid);
-      // Update local view count
-      setViewCount(prev => prev + 1);
+      // Try to increment view count silently
+      try {
+        await recordPostView(id, user?.uid);
+      } catch (viewError) {
+        console.error('Error recording view:', viewError);
+        // Don't show error for view count failures
+      }
 
     } catch (err) {
       console.error('Error fetching post:', err);
-      setError('Failed to load post');
+      setError('Error loading post. Please try again later.');
     } finally {
       setLoading(false);
     }
-  }, [id, user?.uid]);
+  }, [id, user]);
+
+  const handleComment = async (e) => {
+    e.preventDefault();
+    
+    if (!user) {
+      setActionError('Please sign in to add a comment');
+      return;
+    }
+
+    if (!comment.trim()) {
+      setActionError('Comment cannot be empty');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setActionError(null);
+      
+      // Add comment logic here
+      
+      setComment('');
+      setActionError(null);
+    } catch (err) {
+      console.error('Error adding comment:', err);
+      setActionError('Failed to add comment. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVote = async (type) => {
+    if (!user) {
+      setActionError('Please sign in to vote');
+      return;
+    }
+
+    try {
+      setActionError(null);
+      // Vote logic here
+    } catch (err) {
+      console.error('Error voting:', err);
+      setActionError('Failed to record vote. Please try again.');
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -107,33 +144,26 @@ export default function PostPage() {
     }
   };
 
+  // Show loading state
   if (loading) {
     return (
-      <div className="min-h-screen flex justify-center items-center">
-        <div className="animate-pulse max-w-4xl w-full mx-auto p-6">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
-          <div className="space-y-3">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-          </div>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
+  // Show error state
   if (error) {
     return (
-      <div className="min-h-screen flex justify-center items-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Post not found
-          </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            The post you're looking for doesn't exist or has been removed.
-          </p>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="text-xl font-semibold text-red-600 mb-4">{error}</div>
+        <button
+          onClick={() => window.history.back()}
+          className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+        >
+          Go Back
+        </button>
       </div>
     );
   }

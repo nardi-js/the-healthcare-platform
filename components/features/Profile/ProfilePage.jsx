@@ -55,62 +55,91 @@ const ProfilePage = () => {
         setLoading(true);
         setError(null);
 
+        // Get user document reference
         const userDoc = doc(db, 'users', user.uid);
-        const userSnapshot = await getDoc(userDoc);
+        
+        try {
+          const userSnapshot = await getDoc(userDoc);
 
-        if (userSnapshot.exists()) {
-          const userData = userSnapshot.data();
-          
-          // Handle the timestamp, which could be a Firestore timestamp or an ISO string
-          let createdAtDate;
-          if (userData.createdAt?.toDate) {
-            createdAtDate = userData.createdAt.toDate();
-          } else if (userData.createdAt) {
-            createdAtDate = new Date(userData.createdAt);
+          if (userSnapshot.exists()) {
+            const userData = userSnapshot.data();
+            
+            // Handle the timestamp, which could be a Firestore timestamp or an ISO string
+            let createdAtDate;
+            if (userData.createdAt?.toDate) {
+              createdAtDate = userData.createdAt.toDate();
+            } else if (userData.createdAt) {
+              createdAtDate = new Date(userData.createdAt);
+            } else {
+              createdAtDate = new Date();
+            }
+
+            setProfileData(prev => ({
+              ...prev,
+              basic: {
+                displayName: userData.displayName || user.displayName || 'Anonymous',
+                email: userData.email || user.email,
+                photoURL: userData.photoURL || user.photoURL || '/download.png',
+                createdAt: createdAtDate,
+              }
+            }));
           } else {
-            createdAtDate = new Date();
-          }
+            // Create new user profile if it doesn't exist
+            const newUserData = {
+              displayName: user.displayName || (user.email ? user.email.split('@')[0] : 'Anonymous'),
+              email: user.email,
+              photoURL: user.photoURL || '/download.png',
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+              stats: {
+                totalPosts: 0,
+                totalQuestions: 0,
+                totalAnswers: 0,
+                totalComments: 0
+              }
+            };
 
-          setProfileData(prev => ({
-            ...prev,
-            basic: {
-              displayName: userData.displayName || user.displayName || 'Anonymous',
-              email: userData.email || user.email,
-              photoURL: userData.photoURL || user.photoURL || '/download.png',
-              createdAt: createdAtDate,
+            try {
+              await setDoc(userDoc, newUserData);
+              
+              setProfileData(prev => ({
+                ...prev,
+                basic: {
+                  ...newUserData,
+                  createdAt: new Date(),
+                }
+              }));
+            } catch (createError) {
+              console.error('Error creating user profile:', createError);
+              toast.error('Failed to create profile. Please try again.');
+              throw createError;
             }
-          }));
-        } else {
-          // Create new user profile if it doesn't exist
-          const newUserData = {
-            displayName: user.displayName || user.email.split('@')[0],
-            email: user.email,
-            photoURL: user.photoURL || '/download.png',
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          };
-          await setDoc(userDoc, newUserData);
-          
-          setProfileData(prev => ({
-            ...prev,
-            basic: {
-              ...newUserData,
-              createdAt: new Date(),
-            }
-          }));
+          }
+        } catch (docError) {
+          console.error('Error accessing user document:', docError);
+          if (docError.code === 'permission-denied') {
+            toast.error('Access denied. Please sign in again.');
+            throw docError;
+          }
+          throw docError;
         }
 
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching user profile:', err);
+        console.error('Error in profile operation:', err);
         setError(err.message);
-        toast.error('Failed to load profile data');
         setLoading(false);
+        
+        if (err.code === 'permission-denied') {
+          router.push('/sign-in');
+        }
       }
     };
 
-    fetchUserProfile();
-  }, [user]);
+    if (user && !authLoading) {
+      fetchUserProfile();
+    }
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     const fetchUserActivity = async () => {
