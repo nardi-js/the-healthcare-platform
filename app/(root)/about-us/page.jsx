@@ -5,14 +5,15 @@ import AbdulkareemImage from "@/public/Abdulkareem.jpg";
 import Huthayfa from "@/public/Huthayfa.jpg";
 import Safiullah from "@/public/Safiullah.jpg";
 import kamal from "@/public/kamal.jpg";
+import nardi from "@/public/nardi.jpg";
 
 const AboutUs = () => {
   const teamMembers = [
     {
       name: "Nardi",
-      role: "Team Lead & Full Stack Developer",
-      email: "ahmad@healthcare-platform.com",
-      image: "/team/member1.jpg",
+      role: "Team Lead & Full-Stack Developer",
+      email: "nardi@healthcare-platform.com",
+      image: nardi,
     },
     {
       name: "Huthayfa Derham",
@@ -22,20 +23,20 @@ const AboutUs = () => {
     },
     {
       name: "Abdul Rahman Bin Mohd Kamal",
-      role: "Backend Developer",
-      email: "mohammed@healthcare-platform.com",
+      role: "Full-Stack Developer",
+      email: "kamal@healthcare-platform.com",
       image: kamal,
     },
     {
       name: "Safiullah Yousufzai",
-      role: "Frontend Developer",
-      email: "fatima@healthcare-platform.com",
+      role: "Process Designer",
+      email: "safiullah@healthcare-platform.com",
       image: Safiullah,
     },
     {
       name: "ABDULKAREEM SALEM BA WAZIR",
-      role: "Quality Assurance Engineer",
-      email: "yusuf@healthcare-platform.com",
+      role: "Project Planner",
+      email: "abdulkareem@healthcare-platform.com",
       image: AbdulkareemImage,
     },
   ];
@@ -135,12 +136,14 @@ const AboutUs = () => {
                 />
               </div>
               <div className="p-6 text-center">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
                   {member.name}
                 </h3>
-
+                <p className="text-sm text-purple-600 dark:text-purple-400 mb-2">
+                  {member.role}
+                </p>
                 <a
-                  href={"mailto:${member.email}"}
+                  href={`mailto:${member.email}`}
                   className="inline-block text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                 >
                   {member.email}
