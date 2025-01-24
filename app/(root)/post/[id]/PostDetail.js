@@ -6,17 +6,16 @@ import { useAuth } from "@/context/useAuth";
 import { db } from "@/lib/firebase";
 import {
   doc,
-  getDoc,
-  updateDoc,
-  increment,
   collection,
   query,
   orderBy,
-  getDocs,
-  addDoc,
+  onSnapshot,
 } from "firebase/firestore";
-import { FaThumbsUp, FaThumbsDown, FaComment, FaShare } from "react-icons/fa";
+import { FaComment } from "react-icons/fa";
 import Image from "next/image";
+import CommentSystem from "@/components/features/Comments/CommentSystem";
+import VoteSystem from "@/components/shared/VoteSystem";
+import { toast } from "react-hot-toast";
 
 export default function PostDetail({ postId }) {
   const router = useRouter();
@@ -25,115 +24,57 @@ export default function PostDetail({ postId }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
 
+  // Real-time listener for post document
   useEffect(() => {
-    const fetchPost = async () => {
-      if (!postId) return;
+    if (!postId) return;
 
-      try {
-        setLoading(true);
-        const postDoc = await getDoc(doc(db, "posts", postId));
-
-        if (!postDoc.exists()) {
+    const postRef = doc(db, "posts", postId);
+    const unsubscribe = onSnapshot(
+      postRef,
+      (doc) => {
+        if (doc.exists()) {
+          setPost({
+            id: doc.id,
+            ...doc.data(),
+            createdAt: doc.data().createdAt?.toDate() || new Date(),
+          });
+          setLoading(false);
+        } else {
           setError("Post not found");
-          return;
+          setLoading(false);
         }
-
-        // Increment view count
-        await updateDoc(doc(db, "posts", postId), {
-          views: increment(1),
-        });
-
-        setPost({
-          id: postDoc.id,
-          ...postDoc.data(),
-          createdAt: postDoc.data().createdAt?.toDate() || new Date(),
-        });
-
-        // Fetch comments
-        const commentsQuery = query(
-          collection(db, "posts", postId, "comments"),
-          orderBy("createdAt", "desc")
-        );
-        const commentsSnapshot = await getDocs(commentsQuery);
-        const commentsList = commentsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate() || new Date(),
-        }));
-        setComments(commentsList);
-      } catch (err) {
-        console.error("Error fetching post:", err);
+      },
+      (error) => {
+        console.error("Error fetching post:", error);
         setError("Failed to load post");
-      } finally {
         setLoading(false);
       }
-    };
+    );
 
-    fetchPost();
+    return () => unsubscribe();
   }, [postId]);
 
-  const handleVote = async (type) => {
-    if (!user) {
-      router.push("/sign-in");
-      return;
-    }
+  // Real-time listener for comments
+  useEffect(() => {
+    if (!postId) return;
 
-    try {
-      const postRef = doc(db, "posts", postId);
-      if (type === "up") {
-        await updateDoc(postRef, {
-          upvotes: increment(1),
-        });
-        setPost((prev) => ({ ...prev, upvotes: (prev.upvotes || 0) + 1 }));
-      } else {
-        await updateDoc(postRef, {
-          downvotes: increment(1),
-        });
-        setPost((prev) => ({ ...prev, downvotes: (prev.downvotes || 0) + 1 }));
-      }
-    } catch (err) {
-      console.error("Error voting:", err);
-    }
-  };
+    const commentsRef = collection(db, "posts", postId, "comments");
+    const commentsQuery = query(commentsRef, orderBy("createdAt", "desc"));
 
-  const handleComment = async (e) => {
-    e.preventDefault();
-    if (!user) {
-      router.push("/sign-in");
-      return;
-    }
+    const unsubscribe = onSnapshot(commentsQuery, (snapshot) => {
+      const commentsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt:
+          doc.data().createdAt?.toDate?.() || new Date(doc.data().createdAt),
+      }));
+      setComments(commentsData);
+    });
 
-    if (!comment.trim()) return;
-
-    try {
-      const commentsRef = collection(db, "posts", postId, "comments");
-      const newComment = {
-        content: comment,
-        author: {
-          id: user.uid,
-          name: user.displayName || "Anonymous",
-          avatar: user.photoURL || "/download.png",
-        },
-        createdAt: new Date(),
-      };
-
-      await addDoc(commentsRef, newComment);
-
-      // Update post's comment count
-      await updateDoc(doc(db, "posts", postId), {
-        commentCount: increment(1),
-      });
-
-      // Update local state
-      setComments((prev) => [{ id: Date.now(), ...newComment }, ...prev]);
-      setComment("");
-    } catch (err) {
-      console.error("Error adding comment:", err);
-    }
-  };
+    return () => unsubscribe();
+  }, [postId]);
 
   if (loading) {
     return (
@@ -161,15 +102,15 @@ export default function PostDetail({ postId }) {
           {/* Author Info */}
           <div className="flex items-center mb-4">
             <Image
-              src={post.author.avatar}
-              alt={post.author.name}
+              src={post.author.avatar || "/default-avatar.png"}
+              alt={post.author.name || "Anonymous"}
               width={40}
               height={40}
               className="rounded-full"
             />
             <div className="ml-3">
               <p className="font-semibold text-gray-900 dark:text-white">
-                {post.author.name}
+                {post.author.name || "Anonymous"}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {new Date(post.createdAt).toLocaleDateString()}
@@ -220,24 +161,14 @@ export default function PostDetail({ postId }) {
           {/* Engagement */}
           <div className="flex items-center justify-between pt-4 border-t dark:border-gray-700">
             <div className="flex items-center space-x-4">
+              <VoteSystem postId={postId} type="posts" />
               <button
-                onClick={() => handleVote("up")}
+                onClick={() => setShowComments(!showComments)}
                 className="flex items-center space-x-1 text-gray-500 hover:text-purple-500"
               >
-                <FaThumbsUp />
-                <span>{post.upvotes || 0}</span>
-              </button>
-              <button
-                onClick={() => handleVote("down")}
-                className="flex items-center space-x-1 text-gray-500 hover:text-purple-500"
-              >
-                <FaThumbsDown />
-                <span>{post.downvotes || 0}</span>
-              </button>
-              <div className="flex items-center space-x-1 text-gray-500">
                 <FaComment />
-                <span>{comments.length}</span>
-              </div>
+                <span>{post.commentCount || 0}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -247,62 +178,12 @@ export default function PostDetail({ postId }) {
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
             Comments
           </h2>
-
-          {/* Comment Form */}
-          <form onSubmit={handleComment} className="mb-6">
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Add a comment..."
-              className="w-full p-3 border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-              rows="3"
-            />
-            <button
-              type="submit"
-              className="mt-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
-            >
-              Post Comment
-            </button>
-          </form>
-
-          {/* Comments List */}
-          {showComments && (
-            <div className="space-y-4">
-              {comments.map((comment) => (
-                <div
-                  key={comment.id}
-                  className="border-b dark:border-gray-700 pb-4"
-                >
-                  <div className="flex items-center mb-2">
-                    <Image
-                      src={comment.author.avatar}
-                      alt={comment.author.name}
-                      width={32}
-                      height={32}
-                      className="rounded-full"
-                    />
-                    <div className="ml-2">
-                      <p className="font-semibold text-gray-900 dark:text-white">
-                        {comment.author.name}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {new Date(comment.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-gray-900 dark:text-white ml-10">
-                    {comment.content}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-          <button
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            onClick={() => setShowComments(!showComments)}
-          >
-            <FaComment className="w-5 h-5" />
-          </button>
+          <CommentSystem
+            type="post"
+            itemId={postId}
+            comments={comments}
+            onCommentUpdate={() => {}} // No need for manual update since we have real-time listener
+          />
         </div>
       </div>
     </div>

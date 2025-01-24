@@ -2,7 +2,17 @@
 
 import React, { useState, useEffect } from "react";
 import { FaThumbsUp, FaThumbsDown } from "react-icons/fa";
-import { doc, getDoc, setDoc, updateDoc, deleteDoc, increment, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  increment,
+  serverTimestamp,
+  onSnapshot,
+  collection,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/useAuth";
 import toast from "react-hot-toast";
@@ -11,40 +21,47 @@ const VoteSystem = ({ postId, type = "posts" }) => {
   const { user } = useAuth();
   const [likes, setLikes] = useState(0);
   const [dislikes, setDislikes] = useState(0);
-  const [userVote, setUserVote] = useState(null); // 'like' or 'dislike' or null
+  const [userVote, setUserVote] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Fetch post votes and user's vote
+  // Use real-time listener for vote counts
   useEffect(() => {
-    const fetchVotes = async () => {
-      if (!postId) return;
+    if (!postId) return;
+
+    const docRef = doc(db, type, postId);
+    const unsubscribe = onSnapshot(
+      docRef,
+      (doc) => {
+        if (doc.exists()) {
+          const data = doc.data();
+          setLikes(typeof data.likes === "number" ? data.likes : 0);
+          setDislikes(typeof data.dislikes === "number" ? data.dislikes : 0);
+        }
+      },
+      (error) => {
+        console.error("Error listening to vote counts:", error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [postId, type]);
+
+  // Fetch user's vote
+  useEffect(() => {
+    const fetchUserVote = async () => {
+      if (!user?.uid || !postId) return;
 
       try {
-        // Get post/question data for vote counts
-        const docRef = doc(db, type, postId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setLikes(docSnap.data().likes || 0);
-          setDislikes(docSnap.data().dislikes || 0);
-        }
-
-        // Get user's vote if logged in
-        if (user?.uid) {
-          const voteRef = doc(db, `${type}_votes`, `${postId}_${user.uid}`);
-          const voteDoc = await getDoc(voteRef);
-          if (voteDoc.exists()) {
-            setUserVote(voteDoc.data().type);
-          } else {
-            setUserVote(null);
-          }
-        }
+        const voteRef = doc(db, type, postId, 'votes', user.uid);
+        const voteDoc = await getDoc(voteRef);
+        setUserVote(voteDoc.exists() ? voteDoc.data().type : null);
       } catch (error) {
-        console.error("Error fetching votes:", error);
+        console.error("Error fetching user vote:", error);
       }
     };
 
-    fetchVotes();
-  }, [postId, user?.uid, type]);
+    fetchUserVote();
+  }, [user?.uid, postId, type]);
 
   const handleVote = async (voteType) => {
     if (!user?.uid) {
@@ -56,58 +73,41 @@ const VoteSystem = ({ postId, type = "posts" }) => {
 
     try {
       setLoading(true);
-      const voteRef = doc(db, `${type}_votes`, `${postId}_${user.uid}`);
+      const voteRef = doc(db, type, postId, 'votes', user.uid);
       const docRef = doc(db, type, postId);
 
       const voteDoc = await getDoc(voteRef);
       const currentVote = voteDoc.exists() ? voteDoc.data().type : null;
 
-      // If clicking the same vote type, remove the vote
       if (currentVote === voteType) {
+        // Remove vote
         await deleteDoc(voteRef);
         await updateDoc(docRef, {
-          [voteType === 'like' ? 'likes' : 'dislikes']: increment(-1)
+          [voteType]: increment(-1),
         });
-        setUserVote(null);
-        if (voteType === 'like') {
-          setLikes(prev => prev - 1);
-        } else {
-          setDislikes(prev => prev - 1);
-        }
       } else {
-        // If changing vote type or adding new vote
-        const updates = {};
-        
-        // If user had a previous vote, remove it first
+        // Add or change vote
         if (currentVote) {
-          updates[currentVote === 'like' ? 'likes' : 'dislikes'] = increment(-1);
-          if (currentVote === 'like') {
-            setLikes(prev => prev - 1);
-          } else {
-            setDislikes(prev => prev - 1);
-          }
+          // Remove old vote count
+          await updateDoc(docRef, {
+            [currentVote]: increment(-1),
+          });
         }
 
-        // Add the new vote
-        updates[voteType === 'like' ? 'likes' : 'dislikes'] = increment(1);
-        await updateDoc(docRef, updates);
-
-        // Save the vote record
+        // Add new vote
         await setDoc(voteRef, {
           type: voteType,
           userId: user.uid,
-          itemId: postId,
-          itemType: type,
-          timestamp: serverTimestamp()
+          timestamp: serverTimestamp(),
         });
 
-        setUserVote(voteType);
-        if (voteType === 'like') {
-          setLikes(prev => prev + 1);
-        } else {
-          setDislikes(prev => prev + 1);
-        }
+        await updateDoc(docRef, {
+          [voteType]: increment(1),
+        });
       }
+
+      // Update local state after successful commit
+      setUserVote(currentVote === voteType ? null : voteType);
     } catch (error) {
       console.error("Error updating vote:", error);
       toast.error("Error updating vote");
@@ -119,28 +119,28 @@ const VoteSystem = ({ postId, type = "posts" }) => {
   return (
     <div className="flex items-center space-x-4">
       <button
-        onClick={() => handleVote('like')}
+        onClick={() => handleVote("likes")}
         disabled={loading}
         className={`flex items-center space-x-1 ${
-          userVote === 'like'
-            ? 'text-purple-600 dark:text-purple-400'
-            : 'text-gray-500 dark:text-gray-400'
+          userVote === "likes"
+            ? "text-purple-600 dark:text-purple-400"
+            : "text-gray-500 dark:text-gray-400"
         } hover:text-purple-600 dark:hover:text-purple-400 disabled:opacity-50`}
       >
         <FaThumbsUp className="w-4 h-4" />
-        <span>{likes}</span>
+        <span className="ml-1">{likes}</span>
       </button>
       <button
-        onClick={() => handleVote('dislike')}
+        onClick={() => handleVote("dislikes")}
         disabled={loading}
         className={`flex items-center space-x-1 ${
-          userVote === 'dislike'
-            ? 'text-purple-600 dark:text-purple-400'
-            : 'text-gray-500 dark:text-gray-400'
+          userVote === "dislikes"
+            ? "text-purple-600 dark:text-purple-400"
+            : "text-gray-500 dark:text-gray-400"
         } hover:text-purple-600 dark:hover:text-purple-400 disabled:opacity-50`}
       >
         <FaThumbsDown className="w-4 h-4" />
-        <span>{dislikes}</span>
+        <span className="ml-1">{dislikes}</span>
       </button>
     </div>
   );

@@ -12,9 +12,11 @@ import CommentSystem from "@/components/features/Comments/CommentSystem";
 import Username from "@/components/shared/Username";
 import { recordQuestionView } from "@/lib/utils/views";
 import { toast } from 'react-toastify';
+import { useAuth } from "@/context/useAuth";
 
 export default function QuestionDetailsPage() {
   const params = useParams();
+  const { user } = useAuth();
   const [question, setQuestion] = useState(null);
   const [answers, setAnswers] = useState([]);
   const [comments, setComments] = useState([]);
@@ -22,7 +24,6 @@ export default function QuestionDetailsPage() {
   const [showComments, setShowComments] = useState(false);
   const [answerContent, setAnswerContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const user = null; // Assuming you have a way to get the current user
 
   // Add real-time listener for the question document
   useEffect(() => {
@@ -37,6 +38,7 @@ export default function QuestionDetailsPage() {
           createdAt: doc.data().createdAt?.toDate() || new Date(),
         });
       }
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -59,10 +61,8 @@ export default function QuestionDetailsPage() {
           createdAt: doc.data().createdAt?.toDate() || new Date(),
         }));
         setAnswers(answersData);
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching answers:", error);
-        setLoading(false);
       }
     };
 
@@ -90,21 +90,9 @@ export default function QuestionDetailsPage() {
 
   // Increment view count only once when the component mounts
   useEffect(() => {
-    const incrementViewCount = async () => {
-      if (!params.id) return;
-      
-      try {
-        const questionRef = doc(db, "questions", params.id);
-        await updateDoc(questionRef, {
-          views: increment(1)
-        });
-      } catch (error) {
-        console.error("Error incrementing view count:", error);
-      }
-    };
-
-    incrementViewCount();
-  }, [params.id]);
+    if (!params.id) return;
+    recordQuestionView(params.id, user?.uid);
+  }, [params.id, user?.uid]);
 
   const handleAnswer = async (e) => {
     e.preventDefault();
@@ -288,7 +276,7 @@ export default function QuestionDetailsPage() {
           </div>
 
           {/* Vote System */}
-          <VoteSystem postId={params.id} type="questions" handleVote={handleVote} />
+          <VoteSystem postId={params.id} type="questions" />
         </div>
 
         {/* Question Content */}
