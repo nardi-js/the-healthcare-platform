@@ -73,28 +73,7 @@ body.dark {
   --button-bg-color: #2d3748; /* Button background */
   --button-text-color: #e2e8f0; /* Button text */
 }
-.flex {
-  display: flex;
-}
 
-.min-h-screen {
-  min-height: 100vh; /* Ensures the container takes full height */
-}
-
-.ml-64 {
-  margin-left: 16rem; /* Adjust this value based on your sidebar width */
-}
-
-.p-4 {
-  padding-left: 10rem; /* Padding for the main content area */
-  padding-top: 1.5rem;
-}
-
-.content {
-  width: auto;
-  height: auto;
-  margin-top: 1.5rem; /* Space above the content */
-}
 
 @layer base {
   :root {

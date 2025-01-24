@@ -1,0 +1,106 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Posts collection
+    match /posts/{postId} {
+      // Anyone can read posts
+      allow read: if true;
+      // Only authenticated users can create/update/delete posts
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && request.auth.uid == resource.data.authorId;
+      
+      // Votes subcollection
+      match /votes/{voteId} {
+        allow read: if true;
+        allow write: if isAuthenticated();
+      }
+      
+      // Comments subcollection
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isAuthenticated();
+        allow update, delete: if isAuthenticated() && request.auth.uid == resource.data.authorId;
+      }
+    }
+    
+    // Questions collection
+    match /questions/{questionId} {
+      // Anyone can read questions
+      allow read: if true;
+      // Only authenticated users can create/update/delete questions
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && request.auth.uid == resource.data.authorId;
+      
+      // Votes subcollection
+      match /votes/{voteId} {
+        allow read: if true;
+        allow write: if isAuthenticated();
+      }
+      
+      // Answers subcollection
+      match /answers/{answerId} {
+        allow read: if true;
+        allow create: if isAuthenticated();
+        allow update, delete: if isAuthenticated() && request.auth.uid == resource.data.authorId;
+      }
+    }
+    
+    // User profiles
+    match /users/{userId} {
+      // Basic profile info can be read by anyone
+      allow read: if true;
+      
+      // Users can only write to their own profile
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if false; // Prevent profile deletion
+      
+      // Stats subcollection if needed
+      match /stats/{stat} {
+        allow read: if true;
+        allow write: if isAuthenticated() && request.auth.uid == userId;
+      }
+    }
+
+    // Usernames collection for username management
+    match /usernames/{username} {
+      // Anyone can read usernames to check availability
+      allow read: if true;
+      
+      // Allow create if authenticated and username matches their profile
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Prevent updates to usernames
+      allow update, delete: if false;
+    }
+    
+    // Votes collection
+    match /votes/{voteId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isOwner(resource.data.userId);
+      allow delete: if isOwner(resource.data.userId);
+    }
+
+    // Reports collection
+    match /reports/{reportId} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if false; // Only admins can access via Functions
+    }
+    
+    // Default deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

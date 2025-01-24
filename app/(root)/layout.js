@@ -1,17 +1,26 @@
-import Sidebar from "@/components/Sidebar";
-import { QuestionsProvider } from "@/context/QuestionsContext";
+"use client";
 
-export default function Authentication({ children }) {
+import { Navbar, Sidebar } from "@/components/layout";
+import { useSidebar } from "@/context/SidebarContext";
+
+export default function RootLayout({ children }) {
+  const { isSidebarOpen } = useSidebar();
+
   return (
-    <div>
-    <QuestionsProvider >
-    <div className="flex">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Navbar />
+      <div className="flex">
         <Sidebar />
-        <div className="main-content flex-grow" style={{ marginLeft: '250px', marginTop: '64px' }}>
-        {children}
+        <main 
+          className={`flex-1 transition-all duration-300 ease-in-out ${
+            isSidebarOpen ? 'ml-64' : 'ml-0'
+          }`}
+        >
+          <div className="pt-16">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
-    </QuestionsProvider>
-  </div>
-  )
+  );
 }
