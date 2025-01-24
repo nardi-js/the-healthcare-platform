@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { FaSort } from 'react-icons/fa';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, deleteDoc, updateDoc, serverTimestamp, arrayUnion, arrayRemove, query, orderBy, limit, startAfter, getDocs, doc } from 'firebase/firestore';
+import { serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '@/context/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'react-hot-toast';
@@ -67,7 +67,7 @@ const CommentSystem = ({ type, itemId, comments = [], onCommentUpdate }) => {
         likes: []
       };
 
-      await addDoc(collection(db, `${type}s/${itemId}/comments`), commentData);
+      await db.collection(`${type}s/${itemId}/comments`).add(commentData);
       toast.success('Comment added successfully');
       if (onCommentUpdate) onCommentUpdate();
     } catch (error) {
@@ -99,7 +99,7 @@ const CommentSystem = ({ type, itemId, comments = [], onCommentUpdate }) => {
         }
       };
 
-      await addDoc(collection(db, `${type}s/${itemId}/comments`), commentData);
+      await db.collection(`${type}s/${itemId}/comments`).add(commentData);
       toast.success('Reply added successfully');
       if (onCommentUpdate) onCommentUpdate();
     } catch (error) {
@@ -112,7 +112,7 @@ const CommentSystem = ({ type, itemId, comments = [], onCommentUpdate }) => {
 
   const handleDelete = async (commentId) => {
     try {
-      await deleteDoc(doc(db, `${type}s/${itemId}/comments`, commentId));
+      await db.collection(`${type}s/${itemId}/comments`).doc(commentId).delete();
       toast.success('Comment deleted successfully');
       if (onCommentUpdate) onCommentUpdate();
     } catch (error) {
@@ -123,7 +123,7 @@ const CommentSystem = ({ type, itemId, comments = [], onCommentUpdate }) => {
 
   const handleEdit = async (commentId, newText) => {
     try {
-      await updateDoc(doc(db, `${type}s/${itemId}/comments`, commentId), {
+      await db.collection(`${type}s/${itemId}/comments`).doc(commentId).update({
         content: newText,
         updatedAt: serverTimestamp(),
       });
@@ -142,12 +142,12 @@ const CommentSystem = ({ type, itemId, comments = [], onCommentUpdate }) => {
     }
 
     try {
-      const commentRef = doc(db, `${type}s/${itemId}/comments`, commentId);
+      const commentRef = db.collection(`${type}s/${itemId}/comments`).doc(commentId);
       const comment = comments.find(c => c.id === commentId);
       const hasLiked = comment.likes?.includes(user.uid);
 
-      await updateDoc(commentRef, {
-        likes: hasLiked ? arrayRemove(user.uid) : arrayUnion(user.uid),
+      await commentRef.update({
+        likes: hasLiked ? db.FieldValue.arrayRemove(user.uid) : db.FieldValue.arrayUnion(user.uid),
       });
 
       if (onCommentUpdate) onCommentUpdate();
@@ -160,15 +160,15 @@ const CommentSystem = ({ type, itemId, comments = [], onCommentUpdate }) => {
   const loadMoreComments = async () => {
     setIsLoading(true);
     try {
-      const commentsRef = collection(db, `${type}s/${itemId}/comments`);
-      const q = query(
+      const commentsRef = db.collection(`${type}s/${itemId}/comments`);
+      const q = db.query(
         commentsRef,
-        orderBy('createdAt', 'desc'),
-        limit(COMMENTS_PER_PAGE),
-        startAfter(comments[comments.length - 1]?.createdAt)
+        db.orderBy('createdAt', 'desc'),
+        db.limit(COMMENTS_PER_PAGE),
+        db.startAfter(comments[comments.length - 1]?.createdAt)
       );
       
-      const snapshot = await getDocs(q);
+      const snapshot = await db.getDocs(q);
       const newComments = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()

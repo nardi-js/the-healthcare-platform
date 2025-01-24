@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
-import { FaEye, FaComment, FaTags, FaUser, FaThumbsUp } from "react-icons/fa";
+import { FaEye, FaComment, FaUser, FaThumbsUp } from "react-icons/fa";
 import {
   doc,
   onSnapshot,

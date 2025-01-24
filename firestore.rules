@@ -10,6 +10,10 @@ service cloud.firestore {
       return isAuthenticated() && data.authorId == request.auth.uid;
     }
 
+    function isAdmin() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
     // Questions collection
     match /questions/{questionId} {
       allow read: if true;
@@ -59,6 +63,24 @@ service cloud.firestore {
       allow read: if true;
       allow create, update: if isAuthenticated() && userId == request.auth.uid;
       allow delete: if false;
+    }
+
+    // Trusted Applications collection
+    match /trusted-applications/{applicationId} {
+      // Anyone can read their own applications
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      // Authenticated users can create applications
+      allow create: if isAuthenticated() && (
+        // User can only create application for themselves
+        request.resource.data.userId == request.auth.uid &&
+        // Status must be 'pending' on creation
+        request.resource.data.status == 'pending'
+      );
+      // Only admins can update applications
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     // Default deny
