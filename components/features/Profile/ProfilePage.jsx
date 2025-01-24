@@ -4,7 +4,17 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/useAuth';
 import { db } from '@/lib/firebase';
-import { getDoc, doc } from 'firebase/firestore';
+import { 
+  getDoc, 
+  doc,
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  getDocs,
+  setDoc 
+} from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import ProfileHeader from './ProfileHeader';
 import ProfileStats from './ProfileStats';

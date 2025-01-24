@@ -6,6 +6,7 @@ import Huthayfa from "@/public/Huthayfa.jpg";
 import Safiullah from "@/public/Safiullah.jpg";
 import kamal from "@/public/kamal.jpg";
 import nardi from "@/public/nardi.jpg";
+import { FaLinkedin, FaGithub, FaEnvelope } from "react-icons/fa";
 
 const AboutUs = () => {
   const teamMembers = [
@@ -14,30 +15,40 @@ const AboutUs = () => {
       role: "Team Lead & Full-Stack Developer",
       email: "nardi@healthcare-platform.com",
       image: nardi,
+      linkedin: "https://linkedin.com/in/nardi",
+      github: "https://github.com/nardi",
     },
     {
       name: "Huthayfa Derham",
       role: "UI/UX Designer",
       email: "Huthayfa@healthcare-platform.com",
       image: Huthayfa,
+      linkedin: "https://linkedin.com/in/huthayfa",
+      github: "https://github.com/huthayfa",
     },
     {
       name: "Abdul Rahman Bin Mohd Kamal",
       role: "Full-Stack Developer",
       email: "kamal@healthcare-platform.com",
       image: kamal,
+      linkedin: "https://linkedin.com/in/kamal",
+      github: "https://github.com/kamal",
     },
     {
       name: "Safiullah Yousufzai",
       role: "Process Designer",
       email: "safiullah@healthcare-platform.com",
       image: Safiullah,
+      linkedin: "https://linkedin.com/in/safiullah",
+      github: "https://github.com/safiullah",
     },
     {
       name: "ABDULKAREEM SALEM BA WAZIR",
       role: "Project Planner",
       email: "abdulkareem@healthcare-platform.com",
       image: AbdulkareemImage,
+      linkedin: "https://linkedin.com/in/abdulkareem",
+      github: "https://github.com/abdulkareem",
     },
   ];
 
@@ -45,7 +56,7 @@ const AboutUs = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Hero Section */}
       <div className="text-center mb-20">
-        <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
+        <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
           Revolutionizing Healthcare Access
         </h1>
         <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed">
@@ -61,7 +72,7 @@ const AboutUs = () => {
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
           Our Mission
         </h2>
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg transform hover:scale-105 transition-all duration-300">
           <p className="text-xl text-gray-600 dark:text-gray-300 text-center leading-relaxed">
             To democratize healthcare knowledge by creating a trusted platform
             where expertise meets accessibility. We believe that quality
@@ -125,29 +136,48 @@ const AboutUs = () => {
           {teamMembers.map((member, index) => (
             <div
               key={index}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 group"
             >
-              <div className="relative h-64 w-full">
+              <div className="relative h-64 w-full overflow-hidden">
                 <Image
                   src={member.image}
                   alt={member.name}
                   fill
-                  className="object-cover"
+                  className="object-cover transform group-hover:scale-110 transition-transform duration-500"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
-              <div className="p-6 text-center">
+              <div className="p-6 text-center relative">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
                   {member.name}
                 </h3>
-                <p className="text-sm text-purple-600 dark:text-purple-400 mb-2">
+                <p className="text-ellipsis font-medium text-purple-600 dark:text-purple-400 mb-3">
                   {member.role}
                 </p>
-                <a
-                  href={`mailto:${member.email}`}
-                  className="inline-block text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                >
-                  {member.email}
-                </a>
+                <div className="flex justify-center space-x-4">
+                  <a
+                    href={member.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                  >
+                    <FaLinkedin size={20} />
+                  </a>
+                  <a
+                    href={member.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                  >
+                    <FaGithub size={20} />
+                  </a>
+                  <a
+                    href={`mailto:${member.email}`}
+                    className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                  >
+                    <FaEnvelope size={20} />
+                  </a>
+                </div>
               </div>
             </div>
           ))}
@@ -156,4 +186,5 @@ const AboutUs = () => {
     </div>
   );
 };
+
 export default AboutUs;
