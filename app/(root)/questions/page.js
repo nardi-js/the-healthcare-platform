@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { collection, query, orderBy, limit, getDocs, startAfter } from "firebase/firestore";
+import { collection } from "firebase/firestore";
 import { QuestionCard, AskQuestionModal } from "@/components/features/Questions";
 import { FaPlus, FaSearch, FaFilter, FaTags, FaSort, FaCalendar } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { Geist } from "next/font/google";
+import { fetchFilteredItems } from "@/utils/filterUtils";
 
 const categories = [
-  { id: "all", label: "All" },
   { id: "General Medicine", label: "General Medicine" },
   { id: "Mental Health", label: "Mental Health" },
   { id: "Pediatrics", label: "Pediatrics" },
@@ -51,93 +51,25 @@ export default function QuestionsPage() {
   const fetchQuestions = async (isLoadMore = false) => {
     try {
       setLoading(true);
-      let questionsQuery = collection(db, "questions");
-
-      // Only sort by createdAt
-      questionsQuery = query(questionsQuery, orderBy("createdAt", "desc"), limit(20));
-
-      // Add startAfter if loading more
-      if (isLoadMore && lastVisible) {
-        questionsQuery = query(questionsQuery, startAfter(lastVisible));
-      }
-
-      const querySnapshot = await getDocs(questionsQuery);
-      setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
-      setHasMore(querySnapshot.docs.length === 20);
-
-      let fetchedQuestions = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-        likes: doc.data().likes || 0,
-        dislikes: doc.data().dislikes || 0
-      }));
-
-      // Apply category filtering
-      if (selectedCategories.length > 0 && !selectedCategories.includes("all")) {
-        fetchedQuestions = fetchedQuestions.filter(question =>
-          selectedCategories.includes(question.category)
-        );
-      }
-
-      // Date range filter
-      if (selectedDateRange !== "all") {
-        const now = new Date();
-        const cutoffDate = new Date();
-        
-        switch (selectedDateRange) {
-          case "today":
-            cutoffDate.setHours(0, 0, 0, 0);
-            break;
-          case "week":
-            cutoffDate.setDate(now.getDate() - 7);
-            break;
-          case "month":
-            cutoffDate.setMonth(now.getMonth() - 1);
-            break;
-          case "year":
-            cutoffDate.setFullYear(now.getFullYear() - 1);
-            break;
-        }
-        
-        fetchedQuestions = fetchedQuestions.filter(question => 
-          question.createdAt >= cutoffDate
-        );
-      }
-
-      // Apply sorting
-      switch (selectedSort) {
-        case "answered":
-          fetchedQuestions.sort((a, b) => (b.answerCount || 0) - (a.answerCount || 0));
-          break;
-        case "viewed":
-          fetchedQuestions.sort((a, b) => (b.views || 0) - (a.views || 0));
-          break;
-        case "liked":
-          fetchedQuestions.sort((a, b) => (b.likes || 0) - (a.likes || 0));
-          break;
-        case "unanswered":
-          fetchedQuestions = fetchedQuestions.filter(question => !question.answerCount || question.answerCount === 0);
-          break;
-      }
-
-      // Search filter
-      if (searchQuery) {
-        const searchTerms = searchQuery.toLowerCase().split(" ");
-        fetchedQuestions = fetchedQuestions.filter(question =>
-          searchTerms.every(term =>
-            question.title?.toLowerCase().includes(term) ||
-            question.content?.toLowerCase().includes(term) ||
-            question.category?.toLowerCase().includes(term)
-          )
-        );
-      }
+      const result = await fetchFilteredItems({
+        collectionName: 'questions',
+        isLoadMore,
+        lastVisible,
+        selectedCategories,
+        selectedSort,
+        selectedDateRange,
+        searchQuery,
+        categories
+      });
 
       if (isLoadMore) {
-        setQuestions(prev => [...prev, ...fetchedQuestions]);
+        setQuestions(prev => [...prev, ...result.items]);
       } else {
-        setQuestions(fetchedQuestions);
+        setQuestions(result.items);
       }
+      
+      setLastVisible(result.lastVisible);
+      setHasMore(result.hasMore);
     } catch (error) {
       console.error("Error fetching questions:", error);
     } finally {
@@ -213,16 +145,12 @@ export default function QuestionsPage() {
                           type="checkbox"
                           checked={selectedCategories.includes(category.id)}
                           onChange={(e) => {
-                            if (category.id === "all") {
-                              setSelectedCategories(e.target.checked ? ["all"] : []);
-                            } else {
-                              setSelectedCategories(prev => {
-                                const newCategories = e.target.checked
-                                  ? [...prev.filter(id => id !== "all"), category.id]
-                                  : prev.filter(id => id !== category.id);
-                                return newCategories.length === 0 ? ["all"] : newCategories;
-                              });
-                            }
+                            setSelectedCategories(prev => {
+                              const newCategories = e.target.checked
+                                ? [...prev, category.id]
+                                : prev.filter(id => id !== category.id);
+                              return newCategories;
+                            });
                           }}
                           className="mr-2 accent-purple-600"
                         />
@@ -281,7 +209,7 @@ export default function QuestionsPage() {
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => {
-                    setSelectedCategories(["all"]);
+                    setSelectedCategories([]);
                     setSelectedSort("recent");
                     setSelectedDateRange("all");
                     setSearchQuery("");

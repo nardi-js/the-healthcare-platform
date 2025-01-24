@@ -3,16 +3,7 @@
 import { useState, useEffect } from "react";
 import { PostCard, CreatePostModal } from "@/components/features/Posts";
 import { db } from "@/lib/firebase";
-import {
-  collection,
-  query,
-  where,
-  orderBy,
-  limit,
-  getDocs,
-  startAfter,
-  Timestamp,
-} from "firebase/firestore";
+import { collection } from "firebase/firestore";
 import { useAuth } from "@/context/useAuth";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,6 +23,7 @@ import {
   FaBookmark,
 } from "react-icons/fa";
 import { format } from 'date-fns';
+import { fetchFilteredItems } from "@/utils/filterUtils";
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -77,104 +69,25 @@ export default function PostsPage() {
   const fetchPosts = async (isLoadMore = false) => {
     try {
       setLoading(true);
-      let postsQuery = collection(db, "posts");
-
-      // Only sort by createdAt
-      postsQuery = query(postsQuery, orderBy("createdAt", "desc"), limit(20));
-
-      // Add startAfter if loading more
-      if (isLoadMore && lastVisible) {
-        postsQuery = query(postsQuery, startAfter(lastVisible));
-      }
-
-      const querySnapshot = await getDocs(postsQuery);
-      setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
-      setHasMore(querySnapshot.docs.length === 20);
-
-      let fetchedPosts = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-        likes: doc.data().likes || 0,
-        dislikes: doc.data().dislikes || 0
-      }));
-
-      // Apply category/tag filtering
-      if (selectedCategories.length > 0) {
-        fetchedPosts = fetchedPosts.filter(post => {
-          if (!post.tags) return false;
-          
-          // Handle "Other" category
-          if (selectedCategories.includes("Other")) {
-            const hasCustomTag = post.tags.some(tag => 
-              !categories.slice(0, -1).map(c => c.id).includes(tag)
-            );
-            if (hasCustomTag) return true;
-          }
-          
-          // Check for selected predefined categories
-          return post.tags.some(tag => selectedCategories.includes(tag));
-        });
-      }
-
-      // Date range filter
-      if (selectedDateRange !== "all") {
-        const now = new Date();
-        const cutoffDate = new Date();
-        
-        switch (selectedDateRange) {
-          case "today":
-            cutoffDate.setHours(0, 0, 0, 0);
-            break;
-          case "week":
-            cutoffDate.setDate(now.getDate() - 7);
-            break;
-          case "month":
-            cutoffDate.setMonth(now.getMonth() - 1);
-            break;
-          case "year":
-            cutoffDate.setFullYear(now.getFullYear() - 1);
-            break;
-        }
-        
-        fetchedPosts = fetchedPosts.filter(post => 
-          post.createdAt >= cutoffDate
-        );
-      }
-
-      // Apply sorting
-      switch (selectedSort) {
-        case "answered":
-          fetchedPosts.sort((a, b) => (b.commentCount || 0) - (a.commentCount || 0));
-          break;
-        case "viewed":
-          fetchedPosts.sort((a, b) => (b.views || 0) - (a.views || 0));
-          break;
-        case "liked":
-          fetchedPosts.sort((a, b) => (b.likes || 0) - (a.likes || 0));
-          break;
-        case "unanswered":
-          fetchedPosts = fetchedPosts.filter(post => !post.commentCount || post.commentCount === 0);
-          break;
-      }
-
-      // Search filter
-      if (searchQuery) {
-        const searchTerms = searchQuery.toLowerCase().split(" ");
-        fetchedPosts = fetchedPosts.filter(post =>
-          searchTerms.every(term =>
-            post.title?.toLowerCase().includes(term) ||
-            post.content?.toLowerCase().includes(term) ||
-            post.tags?.some(tag => tag.toLowerCase().includes(term))
-          )
-        );
-      }
+      const result = await fetchFilteredItems({
+        collectionName: 'posts',
+        isLoadMore,
+        lastVisible,
+        selectedCategories,
+        selectedSort,
+        selectedDateRange,
+        searchQuery,
+        categories
+      });
 
       if (isLoadMore) {
-        setPosts(prev => [...prev, ...fetchedPosts]);
+        setPosts(prev => [...prev, ...result.items]);
       } else {
-        setPosts(fetchedPosts);
+        setPosts(result.items);
       }
+      
+      setLastVisible(result.lastVisible);
+      setHasMore(result.hasMore);
     } catch (error) {
       console.error("Error fetching posts:", error);
     } finally {

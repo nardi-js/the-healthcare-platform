@@ -132,7 +132,9 @@ export default function PostDetail({ postId }) {
                   </p>
                   <div className="flex items-center space-x-2 text-sm text-gray-500">
                     <FaClock className="w-4 h-4" />
-                    <span>{formatDistanceToNow(new Date(post.createdAt))} ago</span>
+                    <span>
+                      {formatDistanceToNow(new Date(post.createdAt))} ago
+                    </span>
                   </div>
                 </div>
               </div>

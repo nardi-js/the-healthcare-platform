@@ -5,46 +5,52 @@ import Link from "next/link";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import { FaEye, FaComment, FaTags, FaUser, FaThumbsUp } from "react-icons/fa";
-import { doc, onSnapshot, collection, query, orderBy } from "firebase/firestore";
+import {
+  doc,
+  onSnapshot,
+  collection,
+  query,
+  orderBy,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Username } from '@/components/shared';
+import { Username } from "@/components/shared";
 
-const ItemCard = ({ 
-  item, 
+const ItemCard = ({
+  item,
   type, // 'question' or 'post'
-  onClick 
+  onClick,
 }) => {
   const [itemData, setItemData] = useState({
     views: item.views || 0,
     upvotes: 0,
-    commentCount: 0
+    commentCount: 0,
   });
 
   useEffect(() => {
     const collectionName = type + "s"; // 'questions' or 'posts'
     const itemRef = doc(db, collectionName, item.id);
-    
+
     // Listen for item updates (including views and votes)
     const unsubscribeItem = onSnapshot(itemRef, (doc) => {
       if (doc.exists()) {
         const data = doc.data();
-        setItemData(prev => ({
+        setItemData((prev) => ({
           ...prev,
           views: data.views || 0,
           // Get likes count directly
-          upvotes: typeof data.likes === "number" ? data.likes : 0
+          upvotes: typeof data.likes === "number" ? data.likes : 0,
         }));
       }
     });
 
     // Listen for comments count
-    const commentsRef = collection(db, collectionName, item.id, 'comments');
-    const commentsQuery = query(commentsRef, orderBy('createdAt', 'desc'));
-    
+    const commentsRef = collection(db, collectionName, item.id, "comments");
+    const commentsQuery = query(commentsRef, orderBy("createdAt", "desc"));
+
     const unsubscribeComments = onSnapshot(commentsQuery, (snapshot) => {
-      setItemData(prev => ({
+      setItemData((prev) => ({
         ...prev,
-        commentCount: snapshot.size
+        commentCount: snapshot.size,
       }));
     });
 
@@ -69,7 +75,7 @@ const ItemCard = ({
   };
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow"
     >
@@ -79,7 +85,9 @@ const ItemCard = ({
           {item.author?.photoURL || item.author?.avatar ? (
             <Image
               src={item.author.photoURL || item.author.avatar}
-              alt={`Profile picture of ${item.author?.name || item.author?.email || 'user'}`}
+              alt={`Profile picture of ${
+                item.author?.name || item.author?.email || "user"
+              }`}
               width={32}
               height={32}
               className="rounded-full object-cover"
@@ -87,14 +95,21 @@ const ItemCard = ({
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-purple-200 dark:bg-purple-800">
               <span className="text-sm font-semibold text-purple-700 dark:text-purple-300">
-                {(item.author?.name?.[0] || item.author?.email?.[0] || '?').toUpperCase()}
+                {(
+                  item.author?.name?.[0] ||
+                  item.author?.email?.[0] ||
+                  "?"
+                ).toUpperCase()}
               </span>
             </div>
           )}
         </div>
         <div>
           <p className="text-sm font-medium text-gray-900 dark:text-white">
-            <Username userId={item.author?.id} username={item.author?.name || "Anonymous"} />
+            <Username
+              userId={item.author?.id}
+              username={item.author?.name || "Anonymous"}
+            />
             {item.author?.isTrusted && (
               <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                 Trusted
@@ -108,7 +123,7 @@ const ItemCard = ({
       </div>
 
       {/* Content */}
-      {type === 'question' ? (
+      {type === "question" ? (
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
           {item.title}
         </h3>
@@ -133,7 +148,7 @@ const ItemCard = ({
       )}
 
       {/* Categories - Only for questions */}
-      {type === 'question' && item.category && (
+      {type === "question" && item.category && (
         <div className="flex flex-wrap gap-2 mb-4">
           {Array.isArray(item.category) ? (
             item.category.map((cat, index) => (
