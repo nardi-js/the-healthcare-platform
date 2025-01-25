@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FaUserCircle, FaCog, FaSignOutAlt } from "react-icons/fa";
+import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 import { useAuth } from "@/context/useAuth";
 
 export default function UserMenu({ user }) {
