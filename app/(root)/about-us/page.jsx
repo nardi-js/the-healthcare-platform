@@ -31,8 +31,8 @@ const AboutUs = () => {
       role: "Full-Stack Developer",
       email: "kamal@healthcare-platform.com",
       image: kamal,
-      linkedin: "https://linkedin.com/in/kamal",
-      github: "https://github.com/kamal",
+      linkedin: "https://www.linkedin.com/in/evalor-rolave-1876bb340/",
+      github: "https://github.com/Valorx1412",
     },
     {
       name: "Safiullah Yousufzai",
