@@ -11,12 +11,11 @@ import {
   orderBy,
   onSnapshot,
 } from "firebase/firestore";
-import { FaComment, FaEye, FaUser, FaClock, FaTags } from "react-icons/fa";
+import { FaEye, FaUser, FaClock, FaTags } from "react-icons/fa";
 import Image from "next/image";
 import CommentSystem from "@/components/features/Comments/CommentSystem";
 import VoteSystem from "@/components/shared/VoteSystem";
 import { recordPostView } from "@/lib/utils/views";
-import { toast } from "react-hot-toast";
 import { formatDistanceToNow } from "date-fns";
 
 export default function PostDetail({ postId }) {
@@ -26,7 +25,6 @@ export default function PostDetail({ postId }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showComments, setShowComments] = useState(false);
 
   // Real-time listener for post document
   useEffect(() => {
