@@ -39,7 +39,7 @@ const AboutUs = () => {
       role: "Process Designer",
       email: "safiullah@healthcare-platform.com",
       image: Safiullah,
-      linkedin: "https://linkedin.com/in/safiullah",
+      linkedin: "https://linkedin.com/in/safiulah",
       github: "https://github.com/safiullah",
     },
     {
