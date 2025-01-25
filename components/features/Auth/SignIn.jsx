@@ -1,13 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import {
-  useAuth,
-  signin,
-  signInWithGoogle,
-  sendPasswordResetEmail,
-} from "@/context/useAuth"; // Import custom hook for authentication
-import { auth } from "@/lib/firebase";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/context/useAuth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
@@ -15,13 +8,7 @@ import { db } from "@/lib/firebase";
 import { toast } from "react-hot-toast";
 
 const SignIn = () => {
-  const {
-    signin,
-    signInWithGoogle,
-    error: authError,
-    loading: authLoading,
-    clearError,
-  } = useAuth();
+  const { signin, signInWithGoogle, error: authError, loading: authLoading, clearError } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

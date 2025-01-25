@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@/context/useAuth";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { FaTag, FaTimes } from "react-icons/fa";
+import { FaTimes } from "react-icons/fa";
 import Modal from "@/components/ui/modal";
 import FormField from "@/components/common/FormField";
 import toast from "react-hot-toast";
@@ -240,7 +240,6 @@ export default function CreatePostModal({ isOpen, onClose, onSuccess }) {
               key={tag}
               className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800"
             >
-              <FaTag className="mr-1" />
               {tag}
               <button
                 type="button"

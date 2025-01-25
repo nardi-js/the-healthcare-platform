@@ -4,17 +4,16 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/useAuth';
 import { db } from '@/lib/firebase';
-import {
+import { 
+  getDoc, 
+  doc,
   collection,
-  getDocs,
   query,
   where,
   orderBy,
   limit,
-  getDoc,
-  doc,
-  setDoc,
-  serverTimestamp,
+  getDocs,
+  setDoc 
 } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import ProfileHeader from './ProfileHeader';
@@ -89,8 +88,8 @@ const ProfilePage = () => {
               displayName: user.displayName || (user.email ? user.email.split('@')[0] : 'Anonymous'),
               email: user.email,
               photoURL: user.photoURL || '/download.png',
-              createdAt: serverTimestamp(),
-              updatedAt: serverTimestamp(),
+              createdAt: new Date(),
+              updatedAt: new Date(),
               stats: {
                 totalPosts: 0,
                 totalQuestions: 0,
