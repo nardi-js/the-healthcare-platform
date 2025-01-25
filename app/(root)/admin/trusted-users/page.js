@@ -1,13 +1,20 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/useAuth';
-import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
-import { FaUserShield, FaTimes, FaSpinner } from 'react-icons/fa';
-import Image from 'next/image';
-import { formatDistanceToNow } from 'date-fns';
-import toast from 'react-hot-toast';
+import { useState, useEffect } from "react";
+import { useAuth } from "@/context/useAuth";
+import { db } from "@/lib/firebase";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
+import { FaUserShield, FaTimes, FaSpinner } from "react-icons/fa";
+import Image from "next/image";
+import { formatDistanceToNow } from "date-fns";
+import toast from "react-hot-toast";
 
 export default function TrustedUsersPage() {
   const { user } = useAuth();
@@ -20,20 +27,17 @@ export default function TrustedUsersPage() {
 
   const fetchTrustedUsers = async () => {
     try {
-      const q = query(
-        collection(db, 'users'),
-        where('isTrusted', '==', true)
-      );
+      const q = query(collection(db, "users"), where("isTrusted", "==", true));
       const querySnapshot = await getDocs(q);
-      const users = querySnapshot.docs.map(doc => ({
+      const users = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        trustedSince: doc.data().trustedSince?.toDate()
+        trustedSince: doc.data().trustedSince?.toDate(),
       }));
       setTrustedUsers(users);
     } catch (error) {
-      console.error('Error fetching trusted users:', error);
-      toast.error('Error loading trusted users');
+      console.error("Error fetching trusted users:", error);
+      toast.error("Error loading trusted users");
     } finally {
       setLoading(false);
     }
@@ -42,39 +46,39 @@ export default function TrustedUsersPage() {
   const removeTrustedStatus = async (userId) => {
     try {
       // Update user's trusted status
-      await updateDoc(doc(db, 'users', userId), {
+      await updateDoc(doc(db, "users", userId), {
         isTrusted: false,
         trustedSince: null,
         verifiedBy: null,
-        verifierName: null
+        verifierName: null,
       });
 
       // Find and update any existing applications to allow reapplication
       const applicationsQuery = query(
-        collection(db, 'trusted-applications'),
-        where('userId', '==', userId)
+        collection(db, "trusted-applications"),
+        where("userId", "==", userId)
       );
       const applicationsSnapshot = await getDocs(applicationsQuery);
-      
+
       // Update all applications to 'rejected' status
-      const updatePromises = applicationsSnapshot.docs.map(appDoc => 
-        updateDoc(doc(db, 'trusted-applications', appDoc.id), {
-          status: 'rejected',
+      const updatePromises = applicationsSnapshot.docs.map((appDoc) =>
+        updateDoc(doc(db, "trusted-applications", appDoc.id), {
+          status: "rejected",
           reviewedAt: new Date(),
-          rejectionReason: 'Trusted status revoked by admin',
+          rejectionReason: "Trusted status revoked by admin",
           reviewedBy: user.uid,
-          reviewerName: user.displayName || user.email
+          reviewerName: user.displayName || user.email,
         })
       );
-      
+
       await Promise.all(updatePromises);
-      
-      toast.success('Trusted status removed successfully');
+
+      toast.success("Trusted status removed successfully");
       // Update the local state
-      setTrustedUsers(prev => prev.filter(user => user.id !== userId));
+      setTrustedUsers((prev) => prev.filter((user) => user.id !== userId));
     } catch (error) {
-      console.error('Error removing trusted status:', error);
-      toast.error('Error removing trusted status');
+      console.error("Error removing trusted status:", error);
+      toast.error("Error removing trusted status");
     }
   };
 
@@ -114,7 +118,9 @@ export default function TrustedUsersPage() {
                     {trustedUser.photoURL ? (
                       <Image
                         src={trustedUser.photoURL}
-                        alt={`Profile picture of ${trustedUser.username || trustedUser.email || 'user'}`}
+                        alt={`Profile picture of ${
+                          trustedUser.username || trustedUser.email || "user"
+                        }`}
                         width={40}
                         height={40}
                         className="rounded-full object-cover"
@@ -133,7 +139,10 @@ export default function TrustedUsersPage() {
                       </p>
                       {trustedUser.trustedSince && (
                         <p className="text-gray-500 dark:text-gray-300">
-                          Trusted since: {formatDistanceToNow(trustedUser.trustedSince, { addSuffix: true })}
+                          Trusted since:{" "}
+                          {formatDistanceToNow(trustedUser.trustedSince, {
+                            addSuffix: true,
+                          })}
                         </p>
                       )}
                       {trustedUser.verifierName && (

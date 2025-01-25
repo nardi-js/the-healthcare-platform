@@ -2,16 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { QuestionCard } from "@/components/features/Questions";
 import { PostCard } from "@/components/features/Posts";
-import { FaPlus } from "react-icons/fa";
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/useAuth';
+
 
 export default function HomePage() {
-  const router = useRouter();
-  const { user } = useAuth();
   const [trendingQuestions, setTrendingQuestions] = useState([]);
   const [trendingPosts, setTrendingPosts] = useState([]);
   const [loading, setLoading] = useState(true);

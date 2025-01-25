@@ -1,14 +1,12 @@
-import { SignIn } from '@/components/features/Auth'
+import { SignIn } from "@/components/features/Auth";
 
 const pageLogin = () => {
-
   //test 123..
   return (
     <div>
-    
-     <SignIn />  
+      <SignIn />
     </div>
-  )
-}
+  );
+};
 
-export default pageLogin
+export default pageLogin;
